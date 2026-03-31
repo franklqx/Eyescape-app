@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <!-- Background gradient: deep space, slightly warmer at center -->
+    <radialGradient id="bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#131218"/>
+      <stop offset="100%" stop-color="#0A0A0E"/>
+    </radialGradient>
+
+    <!-- Outermost halo — very large, nearly invisible -->
+    <radialGradient id="halo3" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#E8954A" stop-opacity="0.07"/>
+      <stop offset="100%" stop-color="#E8954A" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Mid glow -->
+    <radialGradient id="halo2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#F0A868" stop-opacity="0.22"/>
+      <stop offset="60%"  stop-color="#E8954A" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#E8954A" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Inner glow -->
+    <radialGradient id="halo1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#FDE8C8" stop-opacity="0.85"/>
+      <stop offset="30%"  stop-color="#F2A85A" stop-opacity="0.55"/>
+      <stop offset="70%"  stop-color="#E8954A" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#E8954A" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Core dot gradient -->
+    <radialGradient id="core" cx="42%" cy="38%" r="58%">
+      <stop offset="0%"   stop-color="#FFF8F0"/>
+      <stop offset="45%"  stop-color="#FAC880"/>
+      <stop offset="100%" stop-color="#E8954A"/>
+    </radialGradient>
+
+    <!-- Soft blur filter for halos -->
+    <filter id="blur-lg" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="60"/>
+    </filter>
+    <filter id="blur-md" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="28"/>
+    </filter>
+    <filter id="blur-sm" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+
+  <!-- Outermost atmospheric halo -->
+  <ellipse cx="512" cy="512" rx="400" ry="400" fill="url(#halo3)" filter="url(#blur-lg)"/>
+
+  <!-- Mid glow ring -->
+  <ellipse cx="512" cy="512" rx="220" ry="220" fill="url(#halo2)" filter="url(#blur-md)"/>
+
+  <!-- Inner glow bloom -->
+  <ellipse cx="512" cy="512" rx="100" ry="100" fill="url(#halo1)" filter="url(#blur-sm)"/>
+
+  <!-- Core dot — the focal point -->
+  <circle cx="512" cy="512" r="26" fill="url(#core)"/>
+
+  <!-- Specular highlight on core -->
+  <circle cx="503" cy="503" r="9" fill="white" opacity="0.45"/>
+</svg>
