@@ -25,23 +25,13 @@ struct EyescapeWidgetLiveActivity: Widget {
             DynamicIsland {
                 // MARK: Expanded (long-press)
                 DynamicIslandExpandedRegion(.leading) {
-                    HStack(spacing: 5) {
-                        Circle()
-                            .fill(Color(red: 0.91, green: 0.58, blue: 0.29))
-                            .frame(width: 7, height: 7)
-                            .shadow(color: Color(red: 0.91, green: 0.58, blue: 0.29).opacity(0.7), radius: 4)
-                        Text("Eyescape")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                    }
+                    CatIconView(colorRaw: context.state.petColorRaw, size: 32)
+                        .padding(.leading, 4)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     if context.state.isAlerting {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .foregroundStyle(.orange)
-                    } else if context.state.isPaused {
-                        Image(systemName: "pause.fill")
-                            .foregroundStyle(.secondary)
                     }
                 }
                 DynamicIslandExpandedRegion(.bottom) {
@@ -49,26 +39,48 @@ struct EyescapeWidgetLiveActivity: Widget {
                         .padding(.bottom, 4)
                 }
             } compactLeading: {
-                // MARK: Compact Leading — amber dot, brighter when alerting
-                Circle()
-                    .fill(context.state.isAlerting ? Color.orange : Color(red: 0.91, green: 0.58, blue: 0.29))
-                    .frame(width: 8, height: 8)
-                    .shadow(color: Color(red: 0.91, green: 0.58, blue: 0.29).opacity(context.state.isAlerting ? 1 : 0.6), radius: context.state.isAlerting ? 6 : 4)
+                // MARK: Compact Leading — pixel-cat head
+                CatIconView(colorRaw: context.state.petColorRaw, size: 20)
 
             } compactTrailing: {
-                // MARK: Compact Trailing — countdown or status
+                // MARK: Compact Trailing — countdown or break alert
                 CompactTrailingView(context: context)
 
             } minimal: {
-                // MARK: Minimal (when another LA is present)
-                Circle()
-                    .fill(context.state.isAlerting ? Color.orange : Color(red: 0.91, green: 0.58, blue: 0.29))
-                    .frame(width: 6, height: 6)
-                    .shadow(color: Color(red: 0.91, green: 0.58, blue: 0.29), radius: context.state.isAlerting ? 5 : 3)
+                // MARK: Minimal — cat head only
+                CatIconView(colorRaw: context.state.petColorRaw, size: 16)
             }
             .widgetURL(URL(string: "eyescape://open"))
             .keylineTint(context.state.isAlerting ? .orange : .accentColor)
         }
+    }
+}
+
+// MARK: - Cat Icon View
+
+/// Loads the pixel-cat PNG icon from GitHub raw, with amber pawprint fallback.
+private struct CatIconView: View {
+    let colorRaw: String
+    let size: CGFloat
+
+    private var iconURL: URL? {
+        URL(string: "https://raw.githubusercontent.com/exsec-dev/pixel-cat/main/src/icon/cat/\(colorRaw)_icon.png")
+    }
+
+    var body: some View {
+        AsyncImage(url: iconURL) { phase in
+            switch phase {
+            case .success(let image):
+                image
+                    .resizable()
+                    .interpolation(.none)   // keep pixel art crisp
+                    .scaledToFit()
+            default:
+                Image(systemName: "pawprint.fill")
+                    .foregroundStyle(Color(red: 0.91, green: 0.58, blue: 0.29))
+            }
+        }
+        .frame(width: size, height: size)
     }
 }
 
@@ -90,12 +102,6 @@ private struct LockScreenView: View {
                         .font(.headline)
                         .foregroundStyle(.orange)
                     Text("Look 20 ft away for 20 seconds.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                } else if context.state.isPaused {
-                    Text("Session paused")
-                        .font(.headline)
-                    Text("Tap to resume.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 } else if let target = context.state.targetDate {
@@ -161,10 +167,6 @@ private struct ExpandedBottomView: View {
                         .clipShape(Capsule())
                 }
             }
-        } else if context.state.isPaused {
-            Text("Session paused — open Eyescape to resume.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
         } else if let target = context.state.targetDate {
             HStack {
                 Text("Next break:")
@@ -187,10 +189,6 @@ private struct CompactTrailingView: View {
             Text("Break!")
                 .font(.caption2.bold())
                 .foregroundStyle(.orange)
-        } else if context.state.isPaused {
-            Image(systemName: "pause.fill")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
         } else if let target = context.state.targetDate {
             Text(target, style: .timer)
                 .font(.caption2.monospacedDigit())

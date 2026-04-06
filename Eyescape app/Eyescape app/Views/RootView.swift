@@ -4,6 +4,7 @@ import SwiftData
 struct RootView: View {
     @Environment(SessionManager.self) private var sessionManager
     @Environment(StoreManager.self) private var storeManager
+    @Environment(PetMoodEngine.self) private var petMoodEngine
     @Environment(\.modelContext) private var modelContext
     @State private var selectedTab: Tab = .home
 
@@ -30,6 +31,14 @@ struct RootView: View {
         .onAppear {
             sessionManager.configure(modelContext: modelContext)
             storeManager.configure(modelContext: modelContext)
+            petMoodEngine.configure(modelContext: modelContext)
+            // Sync pet fields into SessionManager so LA picks up current mood/color.
+            sessionManager.currentPetMoodRaw  = petMoodEngine.mood.rawValue
+            sessionManager.currentPetColorRaw = petMoodEngine.petState?.colorRaw ?? "gray"
+            // Schedule pet notifications with current state.
+            if let petState = petMoodEngine.petState {
+                PetNotificationManager.shared.scheduleAll(petName: petState.name, mood: petMoodEngine.mood)
+            }
         }
     }
 
@@ -102,11 +111,12 @@ private struct TabBarButton: View {
 }
 
 #Preview {
-    let schema = Schema([Session.self, BreakRecord.self, UserSettings.self])
+    let schema = Schema([Session.self, BreakRecord.self, UserSettings.self, PetState.self, EyeExerciseRecord.self])
     let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: schema, configurations: config)
     RootView()
         .environment(SessionManager())
         .environment(StoreManager())
+        .environment(PetMoodEngine())
         .modelContainer(container)
 }

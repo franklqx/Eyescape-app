@@ -96,6 +96,7 @@ Reusable logo component. Use in: PaywallView hero, onboarding (future), About se
 - **Countdown**: `.contentTransition(.numericText(countsDown: true))` with `.animation(.default)`.
 - **All other transitions**: SwiftUI defaults (no custom). Keep it calm.
 - **No decorative motion**: blobs, floating elements, parallax — none.
+- **Pet animation exemption**: Frame animations inside `PetView` (breathing, blinking, sleeping, mood transitions) are functional feedback, not decoration — they communicate eye health state. Not subject to the no-decorative-motion rule. All other UI areas remain motion-free.
 
 ---
 

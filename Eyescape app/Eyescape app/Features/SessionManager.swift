@@ -49,14 +49,13 @@ enum SessionError: LocalizedError {
 ///
 ///   IDLE ──startSession()──► ACTIVE ──targetDate reached──► ALERTING
 ///                              │                                │
-///                         pauseSession()              confirmBreak() / skipBreak()
+///                         stopSession()              confirmBreak() / skipBreak()
 ///                              │                                │
 ///                              ▼                                ▼
-///                           PAUSED ──resumeSession()──► ACTIVE  IDLE
+///                             IDLE                    ACTIVE (timer reset +20 min)
 ///
-/// Auto-transitions (scenePhase):
-///   background → autoPause (if ACTIVE)
-///   active     → autoResume (if was auto-paused)
+/// Sessions run indefinitely until the user taps Stop or the screen turns off.
+/// After each break (taken or skipped) the 20-min timer resets automatically.
 
 @Observable
 final class SessionManager: NSObject {
@@ -69,6 +68,10 @@ final class SessionManager: NSObject {
 
     // ActivityKit — stored as Any to avoid compile errors when running on non-DI devices
     private var currentActivity: Activity<EyescapeAttributes>?
+
+    // Pet fields — updated by the app when PetMoodEngine refreshes; passed into every LA update.
+    var currentPetMoodRaw: String  = "okay"
+    var currentPetColorRaw: String = "gray"
 
     override init() {
         super.init()
@@ -144,23 +147,27 @@ final class SessionManager: NSObject {
     func confirmBreak() {
         guard case .alerting(let session) = state else { return }
         let record = BreakRecord(completedAt: .now, wasSkipped: false, session: session)
-        session.endedAt = .now
         modelContext?.insert(record)
-        try? modelContext?.save()
-        cancelNotification(for: session)
-        state = .idle
-        Task { await endLiveActivity() }
+        rescheduleForNextCycle(session: session)
     }
 
     func skipBreak() {
         guard case .alerting(let session) = state else { return }
-        session.endedAt = .now
         let record = BreakRecord(completedAt: .now, wasSkipped: true, session: session)
         modelContext?.insert(record)
+        rescheduleForNextCycle(session: session)
+    }
+
+    /// Resets the 20-min timer after a break is taken or skipped. Session continues.
+    private func rescheduleForNextCycle(session: Session) {
+        let interval = Double(session.intervalMinutes) * 60
+        session.targetDate = Date.now.addingTimeInterval(interval)
+        session.wasAlerted = false
         try? modelContext?.save()
         cancelNotification(for: session)
-        state = .idle
-        Task { await endLiveActivity() }
+        scheduleNotification(for: session)
+        state = .active(session: session)
+        Task { await updateLiveActivity(session: session, isAlerting: false) }
     }
 
     func snoozeBreak() {
@@ -188,17 +195,22 @@ final class SessionManager: NSObject {
     // MARK: - Scene Phase
 
     func handleForeground() {
-        if wasAutoPaused, case .paused(let session) = state {
-            performResume(session: session)
-            wasAutoPaused = false
-        }
         if case .active(let session) = state, session.targetDate < .now {
+            if !session.wasAlerted {
+                session.wasAlerted = true
+                try? modelContext?.save()
+            }
             state = .alerting(session: session)
             Task { await updateLiveActivity(session: session, isAlerting: true) }
         }
     }
 
     func handleBackground() {
+        // Lock screen while alerting = user completed the break (look away 20 sec).
+        if case .alerting = state {
+            confirmBreak()
+            return
+        }
         if case .active(let session) = state {
             performPause(session: session, isAuto: true)
             wasAutoPaused = true
@@ -220,10 +232,34 @@ final class SessionManager: NSObject {
             return
         }
         if session.targetDate < .now {
+            if !session.wasAlerted {
+                session.wasAlerted = true
+                try? context.save()
+            }
             state = .alerting(session: session)
+            Task { await reattachOrRestartLiveActivity(session: session, isAlerting: true) }
         } else {
             state = .active(session: session)
             scheduleNotification(for: session)
+            Task { await reattachOrRestartLiveActivity(session: session, isAlerting: false) }
+        }
+    }
+
+    /// On app relaunch, re-attach to an existing Live Activity for this session,
+    /// or start a fresh one if none exists.
+    private func reattachOrRestartLiveActivity(session: Session, isAlerting: Bool) async {
+        // Try to reuse a still-running activity for this session.
+        if let existing = Activity<EyescapeAttributes>.activities
+            .first(where: { $0.attributes.sessionId == session.id }) {
+            currentActivity = existing
+            await updateLiveActivity(session: session, isAlerting: isAlerting)
+            return
+        }
+        // No existing activity — start a fresh one.
+        guard let s = settings else { return }
+        await startLiveActivity(session: session, settings: s)
+        if isAlerting {
+            await updateLiveActivity(session: session, isAlerting: true)
         }
     }
 
@@ -258,6 +294,10 @@ final class SessionManager: NSObject {
         descriptor.sortBy = [SortDescriptor(\.startedAt, order: .reverse)]
         guard let session = (try? context.fetch(descriptor))?.first else { return }
         guard session.targetDate < .now else { return }
+        if !session.wasAlerted {
+            session.wasAlerted = true
+            try? context.save()
+        }
         state = .alerting(session: session)
         Task { await updateLiveActivity(session: session, isAlerting: true) }
     }
@@ -291,7 +331,11 @@ final class SessionManager: NSObject {
     // MARK: - ActivityKit
 
     private func startLiveActivity(session: Session, settings: UserSettings) async {
-        guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
+        guard ActivityAuthorizationInfo().areActivitiesEnabled else {
+            print("[Eyescape] Live Activity not started: areActivitiesEnabled=false. " +
+                  "Check Settings → Eyescape → Live Activities.")
+            return
+        }
         guard FeatureGate.isAvailable(.dynamicIsland, settings: settings) else { return }
 
         let attributes = EyescapeAttributes(
@@ -302,15 +346,18 @@ final class SessionManager: NSObject {
             targetDate: session.targetDate,
             isPaused: false,
             isAlerting: false,
-            diAlertSize: FeatureGate.effectiveAlertSize(settings: settings)
+            diAlertSize: FeatureGate.effectiveAlertSize(settings: settings),
+            petMoodRaw: currentPetMoodRaw,
+            petColorRaw: currentPetColorRaw
         )
         do {
             currentActivity = try Activity.request(
                 attributes: attributes,
                 content: .init(state: contentState, staleDate: session.targetDate.addingTimeInterval(120))
             )
+            print("[Eyescape] Live Activity started: \(currentActivity?.id ?? "?")")
         } catch {
-            // Live Activity failed silently — notification is the fallback
+            print("[Eyescape] Live Activity request failed: \(error)")
         }
     }
 
@@ -325,7 +372,9 @@ final class SessionManager: NSObject {
             targetDate: isAlerting || isPaused ? nil : session.targetDate,
             isPaused: isPaused,
             isAlerting: isAlerting,
-            diAlertSize: size
+            diAlertSize: size,
+            petMoodRaw: currentPetMoodRaw,
+            petColorRaw: currentPetColorRaw
         )
         let alertConfig: AlertConfiguration? = isAlerting ? AlertConfiguration(
             title: LocalizedStringResource("Time for a break"),

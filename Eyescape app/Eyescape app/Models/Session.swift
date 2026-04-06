@@ -19,6 +19,8 @@ final class Session {
     var isPaused: Bool
     var pausedAt: Date?
     var remainingSecondsAtPause: Int?    // snapshot for resume recalculation
+    var wasAlerted: Bool                 // true when session first transitions to .alerting state
+                                         // used by PetMoodEngine as the "triggered breaks" denominator
 
     @Relationship(deleteRule: .cascade)
     var breaks: [BreakRecord] = []
@@ -35,6 +37,7 @@ final class Session {
         self.isPaused = false
         self.pausedAt = nil
         self.remainingSecondsAtPause = nil
+        self.wasAlerted = false
     }
 
     /// Duration of this session in seconds. Returns nil if session hasn't ended yet.

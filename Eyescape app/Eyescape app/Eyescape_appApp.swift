@@ -19,6 +19,8 @@ struct Eyescape_appApp: App {
             Session.self,
             BreakRecord.self,
             UserSettings.self,
+            PetState.self,
+            EyeExerciseRecord.self,
         ])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {
@@ -29,14 +31,17 @@ struct Eyescape_appApp: App {
     }()
 
     // @Observable uses @State, not @StateObject
-    @State private var sessionManager = SessionManager()
-    @State private var storeManager = StoreManager()
+    @State private var sessionManager  = SessionManager()
+    @State private var storeManager    = StoreManager()
+    @State private var petMoodEngine   = PetMoodEngine()
+    @State private var stoppedOnBackground = false
 
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environment(sessionManager)
                 .environment(storeManager)
+                .environment(petMoodEngine)
                 // Handle deep links from Live Activity buttons
                 .onOpenURL { url in
                     guard url.scheme == "eyescape" else { return }
@@ -47,13 +52,21 @@ struct Eyescape_appApp: App {
                 }
         }
         .modelContainer(sharedModelContainer)
-        // Auto-pause/resume: timer only runs when user is actively looking at the phone
         .onChange(of: scenePhase) { _, newPhase in
             switch newPhase {
             case .active:
                 sessionManager.handleForeground()
+                if stoppedOnBackground {
+                    stoppedOnBackground = false
+                    let hour = Calendar.current.component(.hour, from: .now)
+                    let isSleepTime = hour >= 22 || hour < 7
+                    if !isSleepTime {
+                        try? sessionManager.startSession()  // Auto-restart after screen turns back on.
+                    }
+                }
             case .background, .inactive:
-                sessionManager.handleBackground()
+                sessionManager.stopSession()            // Screen off / call / interruption → cancel session.
+                stoppedOnBackground = true
             @unknown default:
                 break
             }
