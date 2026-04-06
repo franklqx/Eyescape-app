@@ -1,0 +1,1735 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eyescape v2 — UI Preview</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: #0b0d12;
+  font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  color: #F2F2F5;
+  padding: 60px 24px 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 72px;
+}
+
+/* ── PAGE HEADER ───────────────────────────── */
+.page-header {
+  text-align: center;
+}
+.page-header h1 {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #E8954A;
+  margin-bottom: 8px;
+}
+.page-header p {
+  font-size: 13px;
+  color: #5a5a6a;
+}
+
+/* ── SECTION ────────────────────────────────── */
+.section { width: 100%; max-width: 1100px; }
+.section-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: #E8954A;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 28px;
+}
+.phones-row {
+  display: flex;
+  gap: 28px;
+  justify-content: center;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+/* ── PHONE FRAME ────────────────────────────── */
+.phone-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.phone-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: #5a5a6a;
+  letter-spacing: 0.5px;
+}
+.phone {
+  width: 270px;
+  height: 540px;
+  background: #0C0C10;
+  border-radius: 42px;
+  border: 1.5px solid #232330;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04) inset,
+    0 32px 80px rgba(0,0,0,0.7),
+    0 8px 20px rgba(0,0,0,0.4);
+}
+
+/* ── STATUS BAR ─────────────────────────────── */
+.status-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 50px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 16px 22px 0;
+  z-index: 20;
+}
+.status-time {
+  font-size: 14px;
+  font-weight: 600;
+  color: #F2F2F5;
+  letter-spacing: -0.3px;
+}
+.status-right {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.signal-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5px;
+  height: 11px;
+}
+.signal-bar {
+  width: 3px;
+  background: #F2F2F5;
+  border-radius: 1px;
+}
+.battery-icon {
+  width: 22px;
+  height: 11px;
+  border: 1.5px solid #F2F2F5;
+  border-radius: 2px;
+  position: relative;
+  margin-left: 3px;
+}
+.battery-icon::after {
+  content: '';
+  position: absolute;
+  right: -5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 5px;
+  background: #F2F2F5;
+  border-radius: 0 1px 1px 0;
+}
+.battery-fill {
+  position: absolute;
+  left: 2px; top: 2px; bottom: 2px;
+  width: 70%;
+  background: #34c759;
+  border-radius: 1px;
+}
+
+/* ── DYNAMIC ISLAND ─────────────────────────── */
+.di {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #000;
+  border-radius: 20px;
+  z-index: 30;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: center;
+}
+.di-compact {
+  width: 110px;
+  height: 30px;
+  padding: 0 10px;
+  justify-content: space-between;
+}
+.di-expanded {
+  width: 238px;
+  height: 80px;
+  border-radius: 28px;
+  padding: 12px 14px;
+  flex-direction: column;
+  gap: 8px;
+  top: 8px;
+}
+.di-alert {
+  width: 110px;
+  height: 30px;
+  padding: 0 10px;
+  justify-content: space-between;
+  border: 1px solid rgba(255,130,0,0.35);
+  box-shadow: 0 0 12px rgba(255,130,0,0.15);
+}
+/* small cat in DI - pixel canvas */
+.di-cat-canvas { image-rendering: pixelated; }
+.di-timer {
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  font-family: 'SF Mono', 'Menlo', monospace;
+  color: #F2F2F5;
+}
+.di-alert-text {
+  font-size: 11px;
+  font-weight: 700;
+  color: #FF8C00;
+  letter-spacing: 0.2px;
+}
+.di-exp-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+.di-exp-left {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.di-exp-label {
+  font-size: 11px;
+  color: #8A8A96;
+  font-weight: 500;
+}
+.di-exp-timer {
+  font-size: 12px;
+  font-weight: 600;
+  color: #E8954A;
+  font-family: 'SF Mono', monospace;
+}
+.di-exp-actions {
+  display: flex;
+  gap: 6px;
+}
+.di-pill {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: 20px;
+  border: none;
+  cursor: default;
+  letter-spacing: 0.2px;
+}
+.di-pill-amber { background: #E8954A; color: #0C0C10; }
+.di-pill-ghost { background: rgba(255,255,255,0.1); color: #F2F2F5; }
+
+/* ── SCREEN CONTENT ─────────────────────────── */
+.screen-content {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+}
+
+/* ── HOME VIEW ──────────────────────────────── */
+.home-inner {
+  position: absolute;
+  top: 50px; left: 0; right: 0; bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.nav-bar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 20px 6px;
+}
+.nav-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #F2F2F5;
+}
+.nav-icon-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Pet stage */
+.pet-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  gap: 0;
+}
+.mood-badge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 20px;
+}
+.mood-badge-happy {
+  color: #E8954A;
+  background: rgba(232,149,74,0.10);
+  border: 1px solid rgba(232,149,74,0.22);
+}
+.mood-badge-sad {
+  color: #8A8A96;
+  background: rgba(138,138,150,0.08);
+  border: 1px solid rgba(138,138,150,0.18);
+}
+
+.pet-canvas-wrap {
+  position: relative;
+  margin-bottom: 6px;
+}
+.pet-glow-ring {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 14px;
+  background: radial-gradient(ellipse, rgba(232,149,74,0.3) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.pet-glow-ring-sad {
+  background: radial-gradient(ellipse, rgba(100,100,130,0.2) 0%, transparent 70%);
+}
+
+.pet-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #F2F2F5;
+  letter-spacing: -0.3px;
+  margin-top: 14px;
+  margin-bottom: 4px;
+}
+.pet-hearts {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 6px;
+}
+.heart { width: 10px; height: 10px; }
+.pet-score-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 4px;
+}
+.pet-score-lbl { font-size: 10px; color: #8A8A96; }
+.pet-score-val { font-size: 10px; font-weight: 700; color: #E8954A; }
+.pet-score-val-sad { font-size: 10px; font-weight: 700; color: #8A8A96; }
+.pet-hint {
+  font-size: 10px;
+  color: #5a5a6a;
+  text-align: center;
+  line-height: 1.5;
+  margin-top: 2px;
+  padding: 0 20px;
+}
+
+/* Bottom cards */
+.home-cards {
+  width: 100%;
+  padding: 0 16px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.session-card {
+  background: #18181F;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 11px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-left { display: flex; flex-direction: column; gap: 2px; }
+.card-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: #5a5a6a;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.card-val { font-size: 13px; font-weight: 600; color: #F2F2F5; }
+.card-val-warn { font-size: 13px; font-weight: 600; color: #E05454; }
+.live-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #E8954A;
+  box-shadow: 0 0 5px #E8954A;
+}
+.live-row { display: flex; align-items: center; gap: 5px; }
+.live-label { font-size: 10px; font-weight: 600; color: #E8954A; }
+.warn-label { font-size: 10px; font-weight: 600; color: #E05454; }
+.breaks-row {
+  display: flex;
+  gap: 8px;
+}
+.break-pip {
+  width: 8px; height: 8px;
+  border-radius: 2px;
+  background: #E8954A;
+}
+.break-pip-empty {
+  width: 8px; height: 8px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* ── TAB BAR ────────────────────────────────── */
+.tab-bar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 70px;
+  background: rgba(12,12,16,0.96);
+  border-top: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 10px 14px;
+  backdrop-filter: blur(20px);
+}
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  opacity: 0.35;
+}
+.tab-item.active { opacity: 1; }
+.tab-label {
+  font-size: 9px;
+  font-weight: 500;
+  color: #8A8A96;
+}
+.tab-item.active .tab-label { color: #E8954A; }
+.tab-icon-svg { width: 22px; height: 22px; }
+
+/* ── BREAK VIEW ─────────────────────────────── */
+.break-inner {
+  position: absolute;
+  top: 50px; left: 0; right: 0; bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 22px;
+}
+.exercise-picker {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 24px;
+}
+.ex-card {
+  flex: 1;
+  background: #18181F;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 9px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+.ex-card.sel {
+  border-color: rgba(232,149,74,0.35);
+  background: rgba(232,149,74,0.06);
+}
+.ex-icon { width: 18px; height: 18px; }
+.ex-label {
+  font-size: 8px;
+  font-weight: 600;
+  color: #8A8A96;
+  text-align: center;
+  letter-spacing: 0.3px;
+}
+.ex-card.sel .ex-label { color: #E8954A; }
+
+.pulse-ring {
+  position: relative;
+  margin-bottom: 20px;
+}
+.pulse-circle {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #E8954A;
+  box-shadow: 0 0 24px rgba(232,149,74,0.55), 0 0 60px rgba(232,149,74,0.2);
+  animation: breathe 3s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 24px rgba(232,149,74,0.55), 0 0 60px rgba(232,149,74,0.2); }
+  50% { transform: scale(1.28); box-shadow: 0 0 32px rgba(232,149,74,0.7), 0 0 80px rgba(232,149,74,0.3); }
+}
+.break-title { font-size: 18px; font-weight: 600; color: #F2F2F5; margin-bottom: 6px; text-align: center; }
+.break-sub {
+  font-size: 12px;
+  color: #8A8A96;
+  text-align: center;
+  line-height: 1.55;
+  margin-bottom: 22px;
+}
+.break-timer {
+  font-size: 48px;
+  font-weight: 100;
+  font-family: 'SF Mono', 'Menlo', monospace;
+  color: #E8954A;
+  letter-spacing: 2px;
+  margin-bottom: 16px;
+}
+.pet-reward-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(232,149,74,0.08);
+  border: 1px solid rgba(232,149,74,0.18);
+  border-radius: 20px;
+  padding: 5px 12px;
+  margin-bottom: 20px;
+}
+.pet-reward-text {
+  font-size: 10px;
+  font-weight: 600;
+  color: #E8954A;
+}
+.btn-primary {
+  width: 100%;
+  padding: 15px;
+  background: #E8954A;
+  color: #0C0C10;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: 14px;
+  border: none;
+  margin-bottom: 10px;
+  letter-spacing: -0.2px;
+}
+.btn-ghost {
+  font-size: 12px;
+  color: #5a5a6a;
+  background: none;
+  border: none;
+  padding: 10px;
+  font-weight: 500;
+}
+
+/* ── ANALYTICS ──────────────────────────────── */
+.analytics-inner {
+  position: absolute;
+  top: 50px; left: 0; right: 0; bottom: 70px;
+  padding: 0 16px;
+  overflow: hidden;
+}
+.analytics-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0 14px;
+}
+.analytics-title { font-size: 17px; font-weight: 700; }
+.week-chip {
+  font-size: 10px;
+  color: #8A8A96;
+  background: #18181F;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-weight: 500;
+}
+.streak-card {
+  background: rgba(232,149,74,0.06);
+  border: 1px solid rgba(232,149,74,0.2);
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.streak-icon-wrap {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: rgba(232,149,74,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.streak-text { font-size: 12px; font-weight: 700; color: #E8954A; }
+.streak-sub { font-size: 9px; color: #8A8A96; margin-top: 1px; }
+.stat-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.stat-box {
+  flex: 1;
+  background: #18181F;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 10px;
+  text-align: center;
+}
+.stat-num { font-size: 20px; font-weight: 700; color: #F2F2F5; letter-spacing: -0.5px; }
+.stat-unit { font-size: 10px; color: #E8954A; font-weight: 600; }
+.stat-lbl { font-size: 8px; color: #5a5a6a; margin-top: 2px; font-weight: 500; letter-spacing: 0.3px; text-transform: uppercase; }
+.analytics-card {
+  background: #18181F;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  padding: 12px;
+}
+.analytics-card-title {
+  font-size: 9px;
+  font-weight: 700;
+  color: #5a5a6a;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 56px;
+  gap: 4px;
+}
+.bar-day {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  height: 100%;
+  justify-content: flex-end;
+}
+.bar-wrap {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  background: rgba(232,149,74,0.1);
+  position: relative;
+  overflow: hidden;
+}
+.bar-fill {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: linear-gradient(to top, #E8954A, #f0a855);
+  border-radius: 4px 4px 0 0;
+  transition: height 0.3s;
+}
+.bar-fill.low { background: linear-gradient(to top, #4a4a5a, #5a5a6a); }
+.bar-lbl { font-size: 8px; color: #5a5a6a; font-weight: 500; }
+
+/* ── SETTINGS ───────────────────────────────── */
+.settings-inner {
+  position: absolute;
+  top: 50px; left: 0; right: 0; bottom: 70px;
+  padding: 0 16px;
+  overflow: hidden;
+}
+.settings-header { padding: 10px 0 14px; font-size: 17px; font-weight: 700; }
+.settings-section-lbl {
+  font-size: 9px;
+  font-weight: 700;
+  color: #5a5a6a;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0 4px 6px;
+}
+.settings-group {
+  background: #18181F;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.settings-row:last-child { border-bottom: none; }
+.s-row-left { display: flex; flex-direction: column; gap: 1px; }
+.s-row-title { font-size: 13px; font-weight: 500; color: #F2F2F5; }
+.s-row-sub { font-size: 10px; color: #5a5a6a; margin-top: 1px; }
+.s-row-right { display: flex; align-items: center; gap: 6px; }
+.pro-badge {
+  font-size: 8px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #E8954A, #f07030);
+  color: #0C0C10;
+  padding: 2px 6px;
+  border-radius: 5px;
+  letter-spacing: 0.5px;
+}
+.toggle {
+  width: 38px; height: 22px;
+  border-radius: 11px;
+  position: relative;
+}
+.toggle-on { background: #E8954A; }
+.toggle-off { background: #2a2a3a; }
+.toggle-thumb {
+  position: absolute;
+  top: 3px;
+  width: 16px; height: 16px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.toggle-on .toggle-thumb { right: 3px; }
+.toggle-off .toggle-thumb { left: 3px; }
+.s-val { font-size: 12px; font-weight: 600; color: #E8954A; }
+.chevron { font-size: 11px; color: #3a3a4a; }
+.pro-banner {
+  background: rgba(232,149,74,0.05);
+  border: 1px solid rgba(232,149,74,0.2);
+  border-radius: 14px;
+  padding: 14px;
+  text-align: center;
+}
+.pro-banner-title { font-size: 13px; font-weight: 700; color: #E8954A; margin-bottom: 3px; }
+.pro-banner-sub { font-size: 10px; color: #5a5a6a; margin-bottom: 10px; }
+.pro-banner-btn {
+  display: inline-block;
+  background: #E8954A;
+  color: #0C0C10;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 20px;
+  border-radius: 10px;
+}
+
+/* ── DI SHOWCASE ─────────────────────────────── */
+.di-showcase {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  width: 100%;
+  max-width: 640px;
+  background: #111117;
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 24px;
+  padding: 32px;
+}
+.di-showcase-title {
+  font-size: 9px;
+  font-weight: 700;
+  color: #5a5a6a;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: -16px;
+}
+.di-demo-row {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.di-demo-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.di-demo-lbl {
+  font-size: 9px;
+  color: #5a5a6a;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+.di-demo-pill {
+  background: #000;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.di-demo-compact {
+  width: 120px;
+  height: 30px;
+  padding: 0 10px;
+}
+.di-demo-minimal {
+  width: 34px;
+  height: 30px;
+  justify-content: center;
+}
+.di-demo-expanded {
+  width: 250px;
+  height: 78px;
+  border-radius: 28px;
+  padding: 10px 14px;
+  flex-direction: column;
+  gap: 8px;
+}
+.di-demo-alert {
+  width: 120px;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid rgba(255,130,0,0.3);
+  box-shadow: 0 0 10px rgba(255,130,0,0.1);
+}
+.di-dot { width: 8px; height: 8px; border-radius: 50%; background: #E8954A; box-shadow: 0 0 5px #E8954A88; }
+.di-alert-dot { width: 8px; height: 8px; border-radius: 50%; background: #FF8C00; box-shadow: 0 0 8px #FF8C00; animation: pulse-dot 1s ease-in-out infinite; }
+@keyframes pulse-dot { 0%,100%{transform:scale(1)} 50%{transform:scale(1.3)} }
+
+/* ── PAYWALL ─────────────────────────────────── */
+.paywall-inner {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 20px 20px;
+  overflow: hidden;
+}
+.pw-close {
+  align-self: flex-end;
+  width: 30px; height: 30px;
+  background: #18181F;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.07);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+.pw-logo {
+  width: 60px; height: 60px;
+  border-radius: 16px;
+  background: rgba(232,149,74,0.1);
+  border: 1px solid rgba(232,149,74,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+.pw-logo-dot {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: #E8954A;
+  box-shadow: 0 0 10px #E8954A, 0 0 24px rgba(232,149,74,0.4);
+}
+.pw-heading { font-size: 20px; font-weight: 700; margin-bottom: 3px; }
+.pw-sub { font-size: 12px; color: #5a5a6a; margin-bottom: 16px; }
+.feature-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 10px;
+  background: #18181F;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 11px;
+  width: 100%;
+  margin-bottom: 5px;
+}
+.feat-icon {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: rgba(232,149,74,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.feat-title { font-size: 12px; font-weight: 600; color: #F2F2F5; }
+.feat-sub { font-size: 10px; color: #5a5a6a; margin-top: 1px; line-height: 1.4; }
+.pw-price { text-align: center; margin: 12px 0 10px; }
+.pw-price-num { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+.pw-price-type { font-size: 10px; color: #5a5a6a; margin-top: 2px; }
+.pw-buy {
+  width: 100%;
+  padding: 14px;
+  background: #E8954A;
+  color: #0C0C10;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 13px;
+  border: none;
+  margin-bottom: 8px;
+  letter-spacing: -0.2px;
+}
+.pw-restore { font-size: 11px; color: #5a5a6a; text-decoration: underline; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Eyescape v2 — UI Preview</h1>
+  <p>宠物系统 · 像素画小猫 · 无 emoji 设计</p>
+</div>
+
+<!-- ═══════════════════════════════
+     SVG DEFS — shared icons
+═══════════════════════════════ -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <!-- Tab: Home -->
+    <symbol id="ico-home" viewBox="0 0 22 22">
+      <path d="M11 2.5L2 10h2v9h5v-6h4v6h5v-9h2L11 2.5z" fill="currentColor"/>
+    </symbol>
+    <!-- Tab: Stats -->
+    <symbol id="ico-stats" viewBox="0 0 22 22">
+      <rect x="3" y="12" width="4" height="7" rx="1" fill="currentColor"/>
+      <rect x="9" y="7" width="4" height="12" rx="1" fill="currentColor"/>
+      <rect x="15" y="3" width="4" height="16" rx="1" fill="currentColor"/>
+    </symbol>
+    <!-- Tab: Settings -->
+    <symbol id="ico-settings" viewBox="0 0 22 22">
+      <circle cx="11" cy="11" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M11 2v2M11 18v2M2 11h2M18 11h2M4.2 4.2l1.4 1.4M16.4 16.4l1.4 1.4M4.2 17.8l1.4-1.4M16.4 5.6l1.4-1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <!-- Exercise: Eye focus -->
+    <symbol id="ico-eye" viewBox="0 0 18 18">
+      <ellipse cx="9" cy="9" rx="7" ry="4.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="9" cy="9" r="2.5" fill="currentColor"/>
+    </symbol>
+    <!-- Exercise: Roll -->
+    <symbol id="ico-roll" viewBox="0 0 18 18">
+      <path d="M9 2a7 7 0 1 1-4.95 11.95" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M4 14l.05-3 3 .05" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <!-- Exercise: Near-far -->
+    <symbol id="ico-focus" viewBox="0 0 18 18">
+      <circle cx="5" cy="9" r="2" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <circle cx="14" cy="9" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <line x1="7" y1="9" x2="10.5" y2="9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </symbol>
+    <!-- Streak fire -->
+    <symbol id="ico-fire" viewBox="0 0 20 20">
+      <path d="M10 2c0 0-5 4-5 8a5 5 0 0010 0c0-1.5-.8-3-2-4 0 2-1.5 3-3 3-1.5 0-2-1.5-2-2.5C8 5.5 10 2 10 2z" fill="currentColor"/>
+    </symbol>
+    <!-- Pet reward paw -->
+    <symbol id="ico-paw" viewBox="0 0 16 16">
+      <circle cx="8" cy="10" r="3.5" fill="currentColor"/>
+      <circle cx="4.5" cy="6.5" r="1.5" fill="currentColor"/>
+      <circle cx="11.5" cy="6.5" r="1.5" fill="currentColor"/>
+      <circle cx="6" cy="4" r="1.2" fill="currentColor"/>
+      <circle cx="10" cy="4" r="1.2" fill="currentColor"/>
+    </symbol>
+    <!-- Close X -->
+    <symbol id="ico-close" viewBox="0 0 16 16">
+      <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <!-- Timer -->
+    <symbol id="ico-timer" viewBox="0 0 18 18">
+      <circle cx="9" cy="10" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <line x1="9" y1="10" x2="9" y2="6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="9" y1="10" x2="11.5" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="7" y1="2" x2="11" y2="2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </symbol>
+    <!-- Haptic -->
+    <symbol id="ico-haptic" viewBox="0 0 18 18">
+      <rect x="5" y="3" width="8" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <line x1="2" y1="7" x2="0.5" y2="7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="2" y1="11" x2="0.5" y2="11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="16" y1="7" x2="17.5" y2="7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="16" y1="11" x2="17.5" y2="11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </symbol>
+    <!-- Star (pro) -->
+    <symbol id="ico-star" viewBox="0 0 18 18">
+      <path d="M9 2l1.8 5.5H17l-4.9 3.5L14 17 9 13.5 4 17l1.9-6L1 7.5h6.2L9 2z" fill="currentColor"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- Pixel art cat renderer script -->
+<script>
+// Pixel art cat definition — 12 cols × 14 rows, 9px per pixel
+// Colors: 0=transparent 1=outline#1a0800 2=ear#c96820 3=amber#E8954A 4=eye#111 5=nose#ffa8a0 6=mouth#1a0800 7=highlight#fff
+const CAT_HAPPY = [
+  [0,0,0,1,1,0,0,1,1,0,0,0],
+  [0,0,1,2,2,1,1,2,2,1,0,0],
+  [0,0,1,2,2,1,1,2,2,1,0,0],
+  [0,1,1,3,3,3,3,3,3,1,1,0],
+  [1,3,3,3,3,3,3,3,3,3,3,1],
+  [1,3,3,3,3,3,3,3,3,3,3,1],
+  [1,3,3,4,7,3,3,3,7,4,3,1],
+  [1,3,3,4,4,3,3,3,4,4,3,1],
+  [1,3,3,3,3,3,3,3,3,3,3,1],
+  [1,3,3,3,5,5,5,5,3,3,3,1],
+  [1,3,3,3,3,6,6,3,3,3,3,1],
+  [1,3,3,3,3,3,3,3,3,3,3,1],
+  [0,1,3,3,3,3,3,3,3,3,1,0],
+  [0,0,1,1,1,1,1,1,1,1,0,0],
+];
+const CAT_SAD = [
+  [0,0,0,1,1,0,0,1,1,0,0,0],
+  [0,0,1,2,2,1,1,2,2,1,0,0],
+  [0,0,1,2,2,1,1,2,2,1,0,0],
+  [0,1,1,3,3,3,3,3,3,1,1,0],
+  [1,3,3,3,3,3,3,3,3,3,3,1],
+  [1,3,3,3,3,3,3,3,3,3,3,1],
+  [1,3,3,7,4,3,3,3,4,7,3,1], // sad eyes: highlight on left = droopy look
+  [1,3,3,4,4,3,3,3,4,4,3,1],
+  [1,3,3,3,3,8,3,3,3,3,3,1], // 8 = tear
+  [1,3,3,3,5,5,5,5,3,3,3,1],
+  [1,3,3,3,6,3,3,6,3,3,3,1], // frown
+  [1,3,3,3,3,3,3,3,3,3,3,1],
+  [0,1,3,3,3,3,3,3,3,3,1,0],
+  [0,0,1,1,1,1,1,1,1,1,0,0],
+];
+const CAT_ZEN = [
+  [0,0,0,1,1,0,0,1,1,0,0,0],
+  [0,0,1,2,2,1,1,2,2,1,0,0],
+  [0,0,1,2,2,1,1,2,2,1,0,0],
+  [0,1,1,3,3,3,3,3,3,1,1,0],
+  [1,3,3,3,3,3,3,3,3,3,3,1],
+  [1,3,3,3,3,3,3,3,3,3,3,1],
+  [1,3,3,4,4,3,3,3,4,4,3,1], // closed eyes (zen)
+  [1,3,3,3,3,3,3,3,3,3,3,1],
+  [1,3,3,3,3,3,3,3,3,3,3,1],
+  [1,3,3,3,5,5,5,5,3,3,3,1],
+  [1,3,3,3,3,6,6,3,3,3,3,1],
+  [1,3,3,3,3,3,3,3,3,3,3,1],
+  [0,1,3,3,3,3,3,3,3,3,1,0],
+  [0,0,1,1,1,1,1,1,1,1,0,0],
+];
+const CAT_MINI = [ // 8x8 for DI
+  [0,1,1,0,0,1,1,0],
+  [1,2,2,1,1,2,2,1],
+  [1,3,3,3,3,3,3,1],
+  [1,3,4,3,3,4,3,1],
+  [1,3,3,3,3,3,3,1],
+  [1,3,5,5,5,5,3,1],
+  [0,1,3,3,3,3,1,0],
+  [0,0,1,1,1,1,0,0],
+];
+
+const COLORS = {
+  0: null,
+  1: '#1a0800',
+  2: '#c96820',
+  3: '#E8954A',
+  4: '#111111',
+  5: '#ffa8a0',
+  6: '#1a0800',
+  7: '#ffffff',
+  8: '#88aaff',
+};
+
+function drawCat(canvasId, grid, px) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  grid.forEach((row, y) => {
+    row.forEach((cell, x) => {
+      const c = COLORS[cell];
+      if (c) {
+        ctx.fillStyle = c;
+        ctx.fillRect(x * px, y * px, px, px);
+      }
+    });
+  });
+}
+
+window.addEventListener('load', () => {
+  // Main cats (9px each)
+  drawCat('cat-happy', CAT_HAPPY, 9);
+  drawCat('cat-sad', CAT_SAD, 9);
+  drawCat('cat-break', CAT_ZEN, 9);
+  // Mini cats for DI (4px each)
+  drawCat('cat-di-1', CAT_MINI, 4);
+  drawCat('cat-di-2', CAT_MINI, 4);
+  drawCat('cat-di-3', CAT_MINI, 4);
+  drawCat('cat-di-exp', CAT_MINI, 5);
+  // Analytics & settings cat
+  drawCat('cat-analytics', CAT_HAPPY, 9);
+  drawCat('cat-settings', CAT_HAPPY, 9);
+  drawCat('cat-paywall-di', CAT_MINI, 4);
+});
+</script>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 1 — HOME SCREENS
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">主界面 · 宠物 Amber</div>
+  <div class="phones-row">
+
+    <!-- HOME — HAPPY -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <!-- Status bar -->
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-right">
+            <div class="signal-bars">
+              <div class="signal-bar" style="height:4px"></div>
+              <div class="signal-bar" style="height:7px"></div>
+              <div class="signal-bar" style="height:10px"></div>
+              <div class="signal-bar" style="height:11px"></div>
+            </div>
+            <div class="battery-icon"><div class="battery-fill"></div></div>
+          </div>
+        </div>
+
+        <!-- Dynamic Island — compact, cat + timer -->
+        <div class="di di-compact">
+          <canvas id="cat-di-1" width="32" height="32" class="di-cat-canvas"></canvas>
+          <span class="di-timer">18:42</span>
+        </div>
+
+        <div class="home-inner">
+          <div class="nav-bar">
+            <div class="nav-title">Eyescape</div>
+            <div class="nav-icon-btn">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <circle cx="10" cy="10" r="3" stroke="#8A8A96" stroke-width="1.5"/>
+                <path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.1 4.1l1.4 1.4M14.5 14.5l1.4 1.4M4.1 15.9l1.4-1.4M14.5 5.5l1.4-1.4" stroke="#8A8A96" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="pet-stage">
+            <div class="mood-badge mood-badge-happy">Happy · 85 pts</div>
+
+            <div class="pet-canvas-wrap">
+              <canvas id="cat-happy" width="108" height="126" style="image-rendering:pixelated;filter:drop-shadow(0 0 16px rgba(232,149,74,0.45))"></canvas>
+              <div class="pet-glow-ring"></div>
+            </div>
+
+            <div class="pet-name">Amber</div>
+            <!-- Hearts: 4 filled + 1 empty -->
+            <div class="pet-hearts">
+              <svg class="heart" viewBox="0 0 10 9"><path d="M5 8.5C5 8.5 0.5 5.5 0.5 2.5a2 2 0 014 0 2 2 0 014 0c0 3-4.5 6-4.5 6z" fill="#E8954A"/></svg>
+              <svg class="heart" viewBox="0 0 10 9"><path d="M5 8.5C5 8.5 0.5 5.5 0.5 2.5a2 2 0 014 0 2 2 0 014 0c0 3-4.5 6-4.5 6z" fill="#E8954A"/></svg>
+              <svg class="heart" viewBox="0 0 10 9"><path d="M5 8.5C5 8.5 0.5 5.5 0.5 2.5a2 2 0 014 0 2 2 0 014 0c0 3-4.5 6-4.5 6z" fill="#E8954A"/></svg>
+              <svg class="heart" viewBox="0 0 10 9"><path d="M5 8.5C5 8.5 0.5 5.5 0.5 2.5a2 2 0 014 0 2 2 0 014 0c0 3-4.5 6-4.5 6z" fill="#E8954A"/></svg>
+              <svg class="heart" viewBox="0 0 10 9"><path d="M5 8.5C5 8.5 0.5 5.5 0.5 2.5a2 2 0 014 0 2 2 0 014 0c0 3-4.5 6-4.5 6z" fill="#2a2a3a"/></svg>
+            </div>
+          </div>
+
+          <div class="home-cards">
+            <div class="session-card">
+              <div class="card-left">
+                <div class="card-label">Current Session</div>
+                <div class="card-val">Day session · 2h 14m</div>
+              </div>
+              <div class="live-row">
+                <div class="live-dot"></div>
+                <span class="live-label">Active</span>
+              </div>
+            </div>
+            <div class="session-card">
+              <div class="card-left">
+                <div class="card-label">Breaks Today</div>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:5px">
+                  <div class="breaks-row">
+                    <div class="break-pip"></div>
+                    <div class="break-pip"></div>
+                    <div class="break-pip"></div>
+                    <div class="break-pip"></div>
+                    <div class="break-pip-empty"></div>
+                  </div>
+                  <span style="font-size:10px;color:#8A8A96;font-weight:500">4 / 5</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-bar">
+          <div class="tab-item active">
+            <svg class="tab-icon-svg" style="color:#E8954A"><use href="#ico-home"/></svg>
+            <span class="tab-label">Home</span>
+          </div>
+          <div class="tab-item">
+            <svg class="tab-icon-svg" style="color:#5a5a6a"><use href="#ico-stats"/></svg>
+            <span class="tab-label">Stats</span>
+          </div>
+          <div class="tab-item">
+            <svg class="tab-icon-svg" style="color:#5a5a6a"><use href="#ico-settings"/></svg>
+            <span class="tab-label">Settings</span>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Home · Amber 心情好</div>
+    </div>
+
+    <!-- HOME — SAD -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-right">
+            <div class="signal-bars">
+              <div class="signal-bar" style="height:4px;background:#5a5a6a"></div>
+              <div class="signal-bar" style="height:7px;background:#5a5a6a"></div>
+              <div class="signal-bar" style="height:10px;background:#5a5a6a"></div>
+              <div class="signal-bar" style="height:11px;background:#5a5a6a"></div>
+            </div>
+            <div class="battery-icon" style="border-color:#5a5a6a"><div class="battery-fill" style="background:#5a5a6a;width:20%"></div></div>
+          </div>
+        </div>
+
+        <!-- DI alert state -->
+        <div class="di di-alert">
+          <canvas id="cat-di-2" width="32" height="32" class="di-cat-canvas" style="opacity:0.5"></canvas>
+          <span class="di-alert-text">Break!</span>
+        </div>
+
+        <div class="home-inner">
+          <div class="nav-bar">
+            <div class="nav-title">Eyescape</div>
+            <div class="nav-icon-btn">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <circle cx="10" cy="10" r="3" stroke="#5a5a6a" stroke-width="1.5"/>
+                <path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.1 4.1l1.4 1.4M14.5 14.5l1.4 1.4M4.1 15.9l1.4-1.4M14.5 5.5l1.4-1.4" stroke="#5a5a6a" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="pet-stage">
+            <div class="mood-badge mood-badge-sad">Sad · 20 pts</div>
+
+            <div class="pet-canvas-wrap">
+              <canvas id="cat-sad" width="108" height="126" style="image-rendering:pixelated;filter:grayscale(0.3) drop-shadow(0 0 10px rgba(100,100,140,0.3))"></canvas>
+              <div class="pet-glow-ring pet-glow-ring-sad"></div>
+            </div>
+
+            <div class="pet-name">Amber</div>
+            <div class="pet-hearts">
+              <svg class="heart" viewBox="0 0 10 9"><path d="M5 8.5C5 8.5 0.5 5.5 0.5 2.5a2 2 0 014 0 2 2 0 014 0c0 3-4.5 6-4.5 6z" fill="#E8954A"/></svg>
+              <svg class="heart" viewBox="0 0 10 9"><path d="M5 8.5C5 8.5 0.5 5.5 0.5 2.5a2 2 0 014 0 2 2 0 014 0c0 3-4.5 6-4.5 6z" fill="#2a2a3a"/></svg>
+              <svg class="heart" viewBox="0 0 10 9"><path d="M5 8.5C5 8.5 0.5 5.5 0.5 2.5a2 2 0 014 0 2 2 0 014 0c0 3-4.5 6-4.5 6z" fill="#2a2a3a"/></svg>
+              <svg class="heart" viewBox="0 0 10 9"><path d="M5 8.5C5 8.5 0.5 5.5 0.5 2.5a2 2 0 014 0 2 2 0 014 0c0 3-4.5 6-4.5 6z" fill="#2a2a3a"/></svg>
+              <svg class="heart" viewBox="0 0 10 9"><path d="M5 8.5C5 8.5 0.5 5.5 0.5 2.5a2 2 0 014 0 2 2 0 014 0c0 3-4.5 6-4.5 6z" fill="#2a2a3a"/></svg>
+            </div>
+            <div class="pet-hint">Amber misses you.<br>Take a break to cheer her up.</div>
+          </div>
+
+          <div class="home-cards">
+            <div class="session-card" style="border-color:rgba(224,84,84,0.15)">
+              <div class="card-left">
+                <div class="card-label">Breaks Missed</div>
+                <div class="card-val-warn">0 of 3 completed</div>
+              </div>
+              <span class="warn-label">Take one now</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-bar">
+          <div class="tab-item active">
+            <svg class="tab-icon-svg" style="color:#E8954A"><use href="#ico-home"/></svg>
+            <span class="tab-label">Home</span>
+          </div>
+          <div class="tab-item">
+            <svg class="tab-icon-svg" style="color:#5a5a6a"><use href="#ico-stats"/></svg>
+            <span class="tab-label">Stats</span>
+          </div>
+          <div class="tab-item">
+            <svg class="tab-icon-svg" style="color:#5a5a6a"><use href="#ico-settings"/></svg>
+            <span class="tab-label">Settings</span>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Home · Amber 不开心</div>
+    </div>
+
+    <!-- BREAK VIEW -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-right">
+            <div class="signal-bars">
+              <div class="signal-bar" style="height:4px"></div>
+              <div class="signal-bar" style="height:7px"></div>
+              <div class="signal-bar" style="height:10px"></div>
+              <div class="signal-bar" style="height:11px"></div>
+            </div>
+            <div class="battery-icon"><div class="battery-fill"></div></div>
+          </div>
+        </div>
+
+        <div class="di di-alert">
+          <div class="di-alert-dot"></div>
+          <span class="di-alert-text">Break!</span>
+        </div>
+
+        <div class="break-inner">
+          <!-- Exercise picker -->
+          <div style="font-size:9px;font-weight:700;color:#5a5a6a;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px">Choose Exercise</div>
+          <div class="exercise-picker">
+            <div class="ex-card sel">
+              <svg class="ex-icon" style="color:#E8954A"><use href="#ico-eye"/></svg>
+              <span class="ex-label">20-20-20</span>
+            </div>
+            <div class="ex-card">
+              <svg class="ex-icon" style="color:#5a5a6a"><use href="#ico-roll"/></svg>
+              <span class="ex-label">Eye Roll</span>
+            </div>
+            <div class="ex-card">
+              <svg class="ex-icon" style="color:#5a5a6a"><use href="#ico-focus"/></svg>
+              <span class="ex-label">Focus Shift</span>
+            </div>
+          </div>
+
+          <div class="pulse-ring">
+            <div class="pulse-circle"></div>
+          </div>
+
+          <div class="break-title">Rest for 20 seconds</div>
+          <div class="break-sub">Look 20 feet away.<br>Blink slowly. Breathe.</div>
+          <div class="break-timer">00:14</div>
+
+          <!-- Pet reward -->
+          <div class="pet-reward-chip">
+            <canvas id="cat-break" width="27" height="31" style="image-rendering:pixelated" class="di-cat-canvas"></canvas>
+            <span class="pet-reward-text">Amber will love this · +5 pts</span>
+          </div>
+
+          <button class="btn-primary">Done early</button>
+          <button class="btn-ghost">Skip this break</button>
+        </div>
+      </div>
+      <div class="phone-label">Break View · 眼部练习选择</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 2 — DYNAMIC ISLAND STATES
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Dynamic Island · 所有状态</div>
+  <div style="display:flex;justify-content:center">
+    <div class="di-showcase">
+      <div class="di-showcase-title">Compact States</div>
+
+      <div class="di-demo-row">
+        <!-- Working -->
+        <div class="di-demo-item">
+          <div class="di-demo-pill di-demo-compact">
+            <canvas id="cat-di-3" width="32" height="32" class="di-cat-canvas"></canvas>
+            <span style="font-size:12px;font-weight:500;color:#F2F2F5;font-family:monospace">18:42</span>
+          </div>
+          <div class="di-demo-lbl">Working</div>
+        </div>
+
+        <!-- Break alert -->
+        <div class="di-demo-item">
+          <div class="di-demo-pill di-demo-alert">
+            <div class="di-alert-dot"></div>
+            <span style="font-size:11px;font-weight:700;color:#FF8C00;letter-spacing:0.2px">Break!</span>
+          </div>
+          <div class="di-demo-lbl">Alert</div>
+        </div>
+
+        <!-- Paused -->
+        <div class="di-demo-item">
+          <div class="di-demo-pill di-demo-compact" style="border:1px solid #232330">
+            <canvas width="32" height="32" style="image-rendering:pixelated;opacity:0.3" id="cat-di-4"></canvas>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <rect x="2" y="2" width="3.5" height="10" rx="1" fill="#5a5a6a"/>
+              <rect x="8.5" y="2" width="3.5" height="10" rx="1" fill="#5a5a6a"/>
+            </svg>
+          </div>
+          <div class="di-demo-lbl">Paused</div>
+        </div>
+
+        <!-- Minimal -->
+        <div class="di-demo-item">
+          <div class="di-demo-pill di-demo-minimal">
+            <div class="di-dot"></div>
+          </div>
+          <div class="di-demo-lbl">Minimal</div>
+        </div>
+      </div>
+
+      <div class="di-showcase-title" style="margin-top:8px">Expanded State (long-press)</div>
+
+      <!-- Expanded — working -->
+      <div class="di-demo-item" style="width:100%;max-width:280px">
+        <div class="di-demo-pill di-demo-expanded" style="width:100%">
+          <div class="di-exp-row">
+            <div class="di-exp-left">
+              <canvas id="cat-di-exp" width="40" height="40" class="di-cat-canvas"></canvas>
+              <span class="di-exp-label">Eyescape</span>
+            </div>
+            <span class="di-exp-timer">18:42</span>
+          </div>
+          <div class="di-exp-row">
+            <span style="font-size:10px;color:#5a5a6a;font-style:italic">Amber is happy today</span>
+          </div>
+        </div>
+        <div class="di-demo-lbl">Expanded · Working</div>
+      </div>
+
+      <!-- Expanded — break alert -->
+      <div class="di-demo-item" style="width:100%;max-width:280px">
+        <div class="di-demo-pill di-demo-expanded" style="width:100%;border:1px solid rgba(255,130,0,0.3);box-shadow:0 0 14px rgba(255,130,0,0.1)">
+          <div class="di-exp-row">
+            <div class="di-exp-left">
+              <div class="di-alert-dot"></div>
+              <span style="font-size:11px;font-weight:700;color:#FF8C00">Time for a break!</span>
+            </div>
+          </div>
+          <div class="di-exp-row">
+            <div class="di-exp-actions">
+              <div class="di-pill di-pill-amber">Take Break</div>
+              <div class="di-pill di-pill-ghost">+20 min</div>
+            </div>
+          </div>
+        </div>
+        <div class="di-demo-lbl">Expanded · Alert</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SECTION 3 — ANALYTICS + SETTINGS
+═══════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">统计 · 设置</div>
+  <div class="phones-row">
+
+    <!-- ANALYTICS -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-right">
+            <div class="signal-bars">
+              <div class="signal-bar" style="height:4px"></div>
+              <div class="signal-bar" style="height:7px"></div>
+              <div class="signal-bar" style="height:10px"></div>
+              <div class="signal-bar" style="height:11px"></div>
+            </div>
+            <div class="battery-icon"><div class="battery-fill"></div></div>
+          </div>
+        </div>
+        <div class="di di-compact">
+          <canvas id="cat-analytics" width="32" height="32" class="di-cat-canvas"></canvas>
+          <span class="di-timer">14:07</span>
+        </div>
+
+        <div class="analytics-inner">
+          <div class="analytics-header">
+            <span class="analytics-title">Stats</span>
+            <span class="week-chip">This week</span>
+          </div>
+
+          <!-- Streak -->
+          <div class="streak-card">
+            <div class="streak-icon-wrap">
+              <svg width="16" height="16" style="color:#E8954A"><use href="#ico-fire"/></svg>
+            </div>
+            <div>
+              <div class="streak-text">7-day streak</div>
+              <div class="streak-sub">Keep it up · Amber is thriving</div>
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <div class="stat-row">
+            <div class="stat-box">
+              <div class="stat-num">23<span class="stat-unit">brk</span></div>
+              <div class="stat-lbl">Breaks</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-num">84<span class="stat-unit">%</span></div>
+              <div class="stat-lbl">Rate</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-num">340<span class="stat-unit">pt</span></div>
+              <div class="stat-lbl">Score</div>
+            </div>
+          </div>
+
+          <!-- Amber mood chart -->
+          <div class="analytics-card">
+            <div class="analytics-card-title">Amber's mood — this week</div>
+            <div class="bar-chart">
+              <div class="bar-day">
+                <div class="bar-wrap" style="height:48px"><div class="bar-fill" style="height:90%"></div></div>
+                <div class="bar-lbl">M</div>
+              </div>
+              <div class="bar-day">
+                <div class="bar-wrap" style="height:48px"><div class="bar-fill" style="height:78%"></div></div>
+                <div class="bar-lbl">Tu</div>
+              </div>
+              <div class="bar-day">
+                <div class="bar-wrap" style="height:48px"><div class="bar-fill low" style="height:35%"></div></div>
+                <div class="bar-lbl">W</div>
+              </div>
+              <div class="bar-day">
+                <div class="bar-wrap" style="height:48px"><div class="bar-fill" style="height:95%"></div></div>
+                <div class="bar-lbl">Th</div>
+              </div>
+              <div class="bar-day">
+                <div class="bar-wrap" style="height:48px"><div class="bar-fill" style="height:88%"></div></div>
+                <div class="bar-lbl">F</div>
+              </div>
+              <div class="bar-day">
+                <div class="bar-wrap" style="height:48px"><div class="bar-fill low" style="height:20%"></div></div>
+                <div class="bar-lbl">Sa</div>
+              </div>
+              <div class="bar-day">
+                <div class="bar-wrap" style="height:48px"><div class="bar-fill" style="height:75%"></div></div>
+                <div class="bar-lbl">Su</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-bar">
+          <div class="tab-item">
+            <svg class="tab-icon-svg" style="color:#5a5a6a"><use href="#ico-home"/></svg>
+            <span class="tab-label">Home</span>
+          </div>
+          <div class="tab-item active">
+            <svg class="tab-icon-svg" style="color:#E8954A"><use href="#ico-stats"/></svg>
+            <span class="tab-label">Stats</span>
+          </div>
+          <div class="tab-item">
+            <svg class="tab-icon-svg" style="color:#5a5a6a"><use href="#ico-settings"/></svg>
+            <span class="tab-label">Settings</span>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Analytics v2 · Amber 情绪趋势</div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-right">
+            <div class="signal-bars">
+              <div class="signal-bar" style="height:4px"></div>
+              <div class="signal-bar" style="height:7px"></div>
+              <div class="signal-bar" style="height:10px"></div>
+              <div class="signal-bar" style="height:11px"></div>
+            </div>
+            <div class="battery-icon"><div class="battery-fill"></div></div>
+          </div>
+        </div>
+        <div class="di di-compact">
+          <canvas id="cat-settings" width="32" height="32" class="di-cat-canvas"></canvas>
+          <span class="di-timer">14:07</span>
+        </div>
+
+        <div class="settings-inner">
+          <div class="settings-header">Settings</div>
+
+          <div class="settings-section-lbl">Your Pet</div>
+          <div class="settings-group">
+            <div class="settings-row">
+              <div class="s-row-left">
+                <div class="s-row-title">Name</div>
+                <div class="s-row-sub">Amber</div>
+              </div>
+              <div class="s-row-right">
+                <span class="pro-badge">PRO</span>
+                <span class="chevron">›</span>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div class="s-row-left">
+                <div class="s-row-title">Skin</div>
+                <div class="s-row-sub">Default · 2 more unlockable</div>
+              </div>
+              <div class="s-row-right">
+                <span class="pro-badge">PRO</span>
+                <span class="chevron">›</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section-lbl">Session</div>
+          <div class="settings-group">
+            <div class="settings-row">
+              <div class="s-row-left">
+                <div class="s-row-title">Break interval</div>
+              </div>
+              <div class="s-row-right">
+                <span class="pro-badge">PRO</span>
+                <span class="s-val">20 min</span>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div class="s-row-left">
+                <div class="s-row-title">Haptic alerts</div>
+              </div>
+              <div class="s-row-right">
+                <span class="pro-badge">PRO</span>
+                <div class="toggle toggle-on"><div class="toggle-thumb"></div></div>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div class="s-row-left">
+                <div class="s-row-title">DI alert size</div>
+              </div>
+              <div class="s-row-right">
+                <span class="pro-badge">PRO</span>
+                <span class="s-val">M</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pro-banner">
+            <div class="pro-banner-title">Eyescape Pro</div>
+            <div class="pro-banner-sub">Unlock custom intervals, pet skins & more</div>
+            <div class="pro-banner-btn">Upgrade · $2.99</div>
+          </div>
+        </div>
+
+        <div class="tab-bar">
+          <div class="tab-item">
+            <svg class="tab-icon-svg" style="color:#5a5a6a"><use href="#ico-home"/></svg>
+            <span class="tab-label">Home</span>
+          </div>
+          <div class="tab-item">
+            <svg class="tab-icon-svg" style="color:#5a5a6a"><use href="#ico-stats"/></svg>
+            <span class="tab-label">Stats</span>
+          </div>
+          <div class="tab-item active">
+            <svg class="tab-icon-svg" style="color:#E8954A"><use href="#ico-settings"/></svg>
+            <span class="tab-label">Settings</span>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Settings v2</div>
+    </div>
+
+    <!-- PAYWALL -->
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-right">
+            <div class="signal-bars">
+              <div class="signal-bar" style="height:4px"></div>
+              <div class="signal-bar" style="height:7px"></div>
+              <div class="signal-bar" style="height:10px"></div>
+              <div class="signal-bar" style="height:11px"></div>
+            </div>
+            <div class="battery-icon"><div class="battery-fill"></div></div>
+          </div>
+        </div>
+
+        <div class="paywall-inner">
+          <div class="pw-close">
+            <svg width="12" height="12" style="color:#5a5a6a"><use href="#ico-close"/></svg>
+          </div>
+
+          <div class="pw-logo">
+            <div class="pw-logo-dot"></div>
+          </div>
+
+          <div class="pw-heading">Eyescape Pro</div>
+          <div class="pw-sub">Everything your eyes deserve.</div>
+
+          <div class="feature-row">
+            <div class="feat-icon"><svg width="14" height="14" style="color:#E8954A"><use href="#ico-paw"/></svg></div>
+            <div>
+              <div class="feat-title">Pet customization</div>
+              <div class="feat-sub">Rename Amber + unlock 2 extra skins.</div>
+            </div>
+          </div>
+          <div class="feature-row">
+            <div class="feat-icon"><svg width="14" height="14" style="color:#E8954A"><use href="#ico-timer"/></svg></div>
+            <div>
+              <div class="feat-title">Custom interval</div>
+              <div class="feat-sub">5 – 60 min, your pace.</div>
+            </div>
+          </div>
+          <div class="feature-row">
+            <div class="feat-icon"><svg width="14" height="14" style="color:#E8954A"><use href="#ico-haptic"/></svg></div>
+            <div>
+              <div class="feat-title">Haptic alerts</div>
+              <div class="feat-sub">Feel it even when silent.</div>
+            </div>
+          </div>
+          <div class="feature-row">
+            <div class="feat-icon"><svg width="14" height="14" style="color:#E8954A"><use href="#ico-star"/></svg></div>
+            <div>
+              <div class="feat-title">All future Pro features</div>
+              <div class="feat-sub">One purchase, every update.</div>
+            </div>
+          </div>
+
+          <div class="pw-price">
+            <div class="pw-price-num">$2.99</div>
+            <div class="pw-price-type">one-time · no subscription</div>
+          </div>
+
+          <button class="pw-buy">Get Eyescape Pro</button>
+          <button class="pw-restore">Restore purchases</button>
+        </div>
+      </div>
+      <div class="phone-label">Paywall v2 · 宠物卖点</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Draw paused cat (cat-di-4) same as mini but greyed
+window.addEventListener('load', () => {
+  const c = document.getElementById('cat-di-4');
+  if (c) {
+    const ctx = c.getContext('2d');
+    const px = 4;
+    CAT_MINI.forEach((row, y) => {
+      row.forEach((cell, x) => {
+        const col = COLORS[cell];
+        if (col && col !== 'null') {
+          ctx.fillStyle = cell === 3 ? '#5a5a6a' : col;
+          ctx.fillRect(x * px, y * px, px, px);
+        }
+      });
+    });
+  }
+  // break zen cat - smaller render
+  const cb = document.getElementById('cat-break');
+  if (cb) {
+    const ctx = cb.getContext('2d');
+    const px = 3;
+    CAT_ZEN.forEach((row, y) => {
+      row.forEach((cell, x) => {
+        const col = COLORS[cell];
+        if (col) {
+          ctx.fillStyle = col;
+          ctx.fillRect(x * px, y * px, px, px);
+        }
+      });
+    });
+  }
+});
+</script>
+
+</body>
+</html>
