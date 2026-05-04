@@ -25,7 +25,7 @@ struct EyescapeWidgetLiveActivity: Widget {
             DynamicIsland {
                 // MARK: Expanded (long-press)
                 DynamicIslandExpandedRegion(.leading) {
-                    CatIconView(colorRaw: context.state.petColorRaw, size: 32)
+                    EyeIconView(size: 32)
                         .padding(.leading, 4)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
@@ -39,16 +39,16 @@ struct EyescapeWidgetLiveActivity: Widget {
                         .padding(.bottom, 4)
                 }
             } compactLeading: {
-                // MARK: Compact Leading — pixel-cat head
-                CatIconView(colorRaw: context.state.petColorRaw, size: 20)
+                // MARK: Compact Leading — amber eye glyph
+                EyeIconView(size: 20)
 
             } compactTrailing: {
                 // MARK: Compact Trailing — countdown or break alert
                 CompactTrailingView(context: context)
 
             } minimal: {
-                // MARK: Minimal — cat head only
-                CatIconView(colorRaw: context.state.petColorRaw, size: 16)
+                // MARK: Minimal — amber eye glyph
+                EyeIconView(size: 16)
             }
             .widgetURL(URL(string: "eyescape://open"))
             .keylineTint(context.state.isAlerting ? .orange : .accentColor)
@@ -56,31 +56,16 @@ struct EyescapeWidgetLiveActivity: Widget {
     }
 }
 
-// MARK: - Cat Icon View
+// MARK: - Eye Icon View
 
-/// Loads the pixel-cat PNG icon from GitHub raw, with amber pawprint fallback.
-private struct CatIconView: View {
-    let colorRaw: String
+private struct EyeIconView: View {
     let size: CGFloat
 
-    private var iconURL: URL? {
-        URL(string: "https://raw.githubusercontent.com/exsec-dev/pixel-cat/main/src/icon/cat/\(colorRaw)_icon.png")
-    }
-
     var body: some View {
-        AsyncImage(url: iconURL) { phase in
-            switch phase {
-            case .success(let image):
-                image
-                    .resizable()
-                    .interpolation(.none)   // keep pixel art crisp
-                    .scaledToFit()
-            default:
-                Image(systemName: "pawprint.fill")
-                    .foregroundStyle(Color(red: 0.91, green: 0.58, blue: 0.29))
-            }
-        }
-        .frame(width: size, height: size)
+        Image(systemName: "eye.fill")
+            .font(.system(size: size * 0.7, weight: .semibold))
+            .foregroundStyle(Color(red: 0.91, green: 0.58, blue: 0.29))
+            .frame(width: size, height: size)
     }
 }
 

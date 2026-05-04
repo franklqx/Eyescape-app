@@ -4,6 +4,7 @@ import SwiftData
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(StoreManager.self) private var storeManager
+    @Environment(ScreenTimeAuthManager.self) private var screenTimeAuth
     @State private var settings: UserSettings?
     @State private var showPaywall = false
 
@@ -29,6 +30,8 @@ struct SettingsView: View {
                         .padding(.bottom, 32)
 
                         if let settings {
+                            screenTimeSection
+                            Spacer().frame(height: 24)
                             reminderSection(settings: settings)
                             Spacer().frame(height: 24)
                             proSection(settings: settings)
@@ -50,6 +53,52 @@ struct SettingsView: View {
                 settings = UserSettings.fetchOrCreate(context: modelContext)
             }
             .environment(storeManager)
+        }
+    }
+
+    // MARK: - Screen Time Section
+
+    private var screenTimeSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            SectionHeader(title: "Screen Time")
+
+            SettingsCard {
+                SettingsRow(
+                    label: "System data",
+                    subtitle: screenTimeStatusSubtitle
+                ) {
+                    if screenTimeAuth.status == .approved {
+                        Text("Connected")
+                            .font(.system(size: 12, design: .monospaced))
+                            .foregroundColor(Color(hex: "E8954A"))
+                    } else {
+                        Button {
+                            Task { await screenTimeAuth.requestAuthorization() }
+                        } label: {
+                            Text("Connect")
+                                .font(.system(size: 12, weight: .medium, design: .monospaced))
+                                .foregroundColor(Color(hex: "E8954A"))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(Color(hex: "E8954A").opacity(0.12))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .stroke(Color(hex: "E8954A").opacity(0.4), lineWidth: 1)
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+        }
+    }
+
+    private var screenTimeStatusSubtitle: String {
+        switch screenTimeAuth.status {
+        case .approved:      return "Real device data on. Stays on this iPhone."
+        case .denied:        return "Permission denied. Re-enable in iOS Settings."
+        case .notDetermined: return "Use real screen-time data from your device."
         }
     }
 
@@ -313,4 +362,5 @@ private struct PillGroup<T: Hashable>: View {
     SettingsView()
         .modelContainer(container)
         .environment(StoreManager())
+        .environment(ScreenTimeAuthManager())
 }

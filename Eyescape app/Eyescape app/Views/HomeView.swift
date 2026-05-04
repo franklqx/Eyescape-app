@@ -3,10 +3,12 @@ import SwiftData
 
 struct HomeView: View {
     @Environment(SessionManager.self) private var sessionManager
-    @Environment(PetMoodEngine.self) private var petMoodEngine
 
-    @State private var showBreakView  = false
-    @State private var showPetBubble  = false
+    @Query private var pickups: [PickupSession]
+    @Query private var exercises: [EyeExerciseRecord]
+
+    @State private var showBreakView = false
+    @State private var pendingExercise: EyeExercise?
     @State private var errorMessage: String?
 
     private var greeting: String {
@@ -19,6 +21,28 @@ struct HomeView: View {
         }
     }
 
+    // MARK: - Aggregated stats
+
+    private var todayTotalLabel: String {
+        formatDuration(ScreenTimeAggregator.todayTotalScreenTime(pickups: pickups))
+    }
+
+    private var todayAvgLabel: String {
+        let avg = ScreenTimeAggregator.todayAveragePickupDuration(pickups: pickups)
+        return avg > 0 ? formatDuration(avg) : "—"
+    }
+
+    private var todayComplianceLabel: String {
+        let pickupCount = ScreenTimeAggregator.todayPickupCount(pickups: pickups)
+        guard pickupCount > 0 else { return "—" }
+        let rate = ScreenTimeAggregator.today2020ComplianceRate(pickups: pickups)
+        return "\(Int((rate * 100).rounded()))%"
+    }
+
+    private var todayExerciseCount: Int {
+        ScreenTimeAggregator.todayExerciseCount(records: exercises)
+    }
+
     var body: some View {
         ZStack {
             Color(hex: "0C0C10").ignoresSafeArea()
@@ -26,24 +50,25 @@ struct HomeView: View {
             VStack(spacing: 0) {
                 Color.clear.frame(height: 60)   // DI clearance
 
-                Spacer()                          // pushes pet toward center
-
-                petSection
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 24) {
+                        headerSection
+                        statsGrid
+                        exerciseCard
+                        sessionStatusBar
+                    }
                     .padding(.horizontal, 24)
-
-                Spacer().frame(height: 36)        // fixed gap between pet and info
-
-                VStack(alignment: .leading, spacing: 16) {
-                    headerSection
-                    sessionSection
+                    .padding(.bottom, 100)      // tab bar clearance
                 }
-                .padding(.horizontal, 24)
-
-                Spacer().frame(height: 100)       // tab bar clearance
             }
         }
         .task {
             await sessionManager.requestNotificationPermission()
+        }
+        .onAppear {
+            if sessionManager.isIdle {
+                try? sessionManager.startSession()
+            }
         }
         .onChange(of: sessionManager.isAlerting) { _, alerting in
             if alerting { showBreakView = true }
@@ -51,6 +76,9 @@ struct HomeView: View {
         .sheet(isPresented: $showBreakView) {
             BreakView()
                 .environment(sessionManager)
+        }
+        .sheet(item: $pendingExercise) { exercise in
+            EyeExerciseSession(exercise: exercise)
         }
         .alert("Error", isPresented: .constant(errorMessage != nil)) {
             Button("OK") { errorMessage = nil }
@@ -66,153 +94,239 @@ struct HomeView: View {
             Text(greeting)
                 .font(.system(size: 24, weight: .semibold))
                 .foregroundColor(Color(hex: "F2F2F5"))
-            Text(statusSubtitle)
+            Text("Your eyes today")
                 .font(.system(size: 13))
                 .foregroundColor(Color(hex: "8A8A96"))
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var statusSubtitle: String {
-        switch sessionManager.state {
-        case .idle:      return "Ready when you are."
-        case .active:    return "Protection is active."
-        case .paused:    return "Session paused."
-        case .alerting:  return "Break time!"
+    // MARK: - Stats grid (2×2)
+
+    private var statsGrid: some View {
+        LazyVGrid(
+            columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)],
+            spacing: 12
+        ) {
+            StatMiniCard(label: "TODAY", value: todayTotalLabel, suffix: "screen time")
+            StatMiniCard(label: "AVG PICKUP", value: todayAvgLabel, suffix: "per session")
+            StatMiniCard(label: "≤ 20 MIN", value: todayComplianceLabel, suffix: "compliance")
+            StatMiniCard(label: "EXERCISES", value: "\(todayExerciseCount)", suffix: "today")
         }
     }
 
-    // MARK: - Pet Section
+    // MARK: - Exercise card
 
-    private var petSection: some View {
-        VStack(spacing: 12) {
-            // Dialogue bubble — appears above the cat when tapped
-            if showPetBubble {
-                Text(petMoodEngine.mood.message)
-                    .font(.system(size: 13))
-                    .foregroundColor(Color(hex: "F2F2F5"))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(Color(hex: "22222C"))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.white.opacity(0.08), lineWidth: 1)
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .transition(.opacity.combined(with: .scale(scale: 0.95, anchor: .bottom)))
-            }
-
-            // Cat + name + mood label — tap to toggle dialogue bubble
-            Button {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    showPetBubble.toggle()
-                }
-            } label: {
-                VStack(spacing: 6) {
-                    PetView(
-                        mood: petMoodEngine.mood,
-                        petColor: petMoodEngine.petState?.color ?? .gray
-                    )
-                    .frame(width: 80, height: 80)
-
-                    if let petState = petMoodEngine.petState {
-                        Text(petState.name)
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(Color(hex: "F2F2F5"))
-                    }
-
-                    Text(petMoodEngine.mood.label)
-                        .font(.system(size: 11))
-                        .foregroundColor(Color(hex: "8A8A96"))
-                }
-            }
-            .buttonStyle(.plain)
-        }
-        .frame(maxWidth: .infinity)
-    }
-
-    // MARK: - Session Section
-
-    private var sessionSection: some View {
-        Group {
-            switch sessionManager.state {
-            case .idle:
-                idleCard
-            case .active(let session), .alerting(let session), .paused(let session):
-                activeCard(session: session)
-            }
-        }
-    }
-
-    private var idleCard: some View {
+    private var exerciseCard: some View {
         VStack(alignment: .leading, spacing: 16) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(hex: "18181F"))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.white.opacity(0.07), lineWidth: 1)
-                    )
-                    .frame(height: 80)
-                VStack(spacing: 4) {
-                    Text("No active session")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(Color(hex: "8A8A96"))
-                    Text("Start one to protect your eyes")
-                        .font(.system(size: 12))
-                        .foregroundColor(Color(hex: "8A8A96").opacity(0.6))
+            VStack(alignment: .leading, spacing: 4) {
+                Text("EYE EXERCISES")
+                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    .foregroundColor(Color(hex: "E8954A"))
+                    .tracking(1.2)
+                Text("Take a moment for your eyes")
+                    .font(.system(size: 14))
+                    .foregroundColor(Color(hex: "F2F2F5"))
+            }
+
+            HStack(spacing: 8) {
+                ForEach(EyeExercise.allCases) { exercise in
+                    exerciseButton(exercise)
                 }
             }
-
-            Button {
-                do { try sessionManager.startSession() }
-                catch { errorMessage = error.localizedDescription }
-            } label: {
-                Text("Start session")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(Color(hex: "0C0C10"))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 15)
-                    .background(Color(hex: "E8954A"))
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
-            }
         }
+        .padding(20)
+        .background(Color(hex: "18181F"))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.white.opacity(0.07), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
-    private func activeCard(session: Session) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(Color(hex: "E8954A"))
-                    .frame(width: 8, height: 8)
-                    .shadow(color: Color(hex: "E8954A"), radius: 5)
-                Text("Monitoring your screen time")
-                    .font(.system(size: 14))
+    private func exerciseButton(_ exercise: EyeExercise) -> some View {
+        Button {
+            pendingExercise = exercise
+        } label: {
+            VStack(spacing: 6) {
+                Text(exercise.lengthLabel)
+                    .font(.system(size: 18, weight: .semibold, design: .monospaced))
+                    .foregroundColor(Color(hex: "F2F2F5"))
+                Text(exercise.displayName)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(Color(hex: "F2F2F5"))
+                Text(exercise.subtitle)
+                    .font(.system(size: 10))
                     .foregroundColor(Color(hex: "8A8A96"))
-                Spacer()
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2, reservesSpace: true)
             }
-            .padding(20)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .padding(.horizontal, 8)
             .background(Color(hex: "22222C"))
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.white.opacity(0.05), lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+    }
 
-            Button {
-                sessionManager.stopSession()
-            } label: {
-                Text("Stop")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(Color(hex: "E05454"))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 15)
-                    .background(Color(hex: "E05454").opacity(0.06))
-                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color(hex: "E05454").opacity(0.2), lineWidth: 1))
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+    // MARK: - Session status bar
+
+    private var sessionStatusBar: some View {
+        HStack(spacing: 12) {
+            Circle()
+                .fill(statusDotColor)
+                .frame(width: 8, height: 8)
+                .shadow(color: statusDotColor.opacity(statusDotGlow), radius: 5)
+                .accessibilityHidden(true)
+
+            Text(statusLabel)
+                .font(.system(size: 13))
+                .foregroundColor(Color(hex: "8A8A96"))
+
+            Spacer()
+
+            if let action = primaryAction {
+                Button { action.run() } label: {
+                    Text(action.label)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(action.tint)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(action.background)
+                        .clipShape(Capsule())
+                }
+                .accessibilityLabel(action.a11y)
             }
+        }
+        .padding(16)
+        .background(Color(hex: "18181F"))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.white.opacity(0.07), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Session status: \(statusLabel)")
+    }
+
+    private var statusDotColor: Color {
+        switch sessionManager.state {
+        case .active, .alerting: return Color(hex: "E8954A")
+        case .paused, .idle:     return Color(hex: "E8954A").opacity(0.4)
         }
     }
 
+    private var statusDotGlow: Double {
+        switch sessionManager.state {
+        case .alerting: return 0.9
+        case .active:   return 0.6
+        case .paused, .idle: return 0
+        }
+    }
+
+    private var statusLabel: String {
+        switch sessionManager.state {
+        case .idle:     return "Auto-protect off"
+        case .active:   return "Auto-protecting your eyes"
+        case .paused:   return "Paused"
+        case .alerting: return "Time for a break"
+        }
+    }
+
+    private var primaryAction: SessionBarAction? {
+        switch sessionManager.state {
+        case .idle:
+            return SessionBarAction(
+                label: "Start",
+                a11y: "Start auto-protect session",
+                tint: Color(hex: "E8954A"),
+                background: Color(hex: "E8954A").opacity(0.12),
+                run: { try? sessionManager.startSession() }
+            )
+        case .active:
+            return SessionBarAction(
+                label: "Pause",
+                a11y: "Pause auto-protect session",
+                tint: Color(hex: "8A8A96"),
+                background: Color(hex: "22222C"),
+                run: { try? sessionManager.pauseSession() }
+            )
+        case .paused:
+            return SessionBarAction(
+                label: "Resume",
+                a11y: "Resume auto-protect session",
+                tint: Color(hex: "E8954A"),
+                background: Color(hex: "E8954A").opacity(0.12),
+                run: { try? sessionManager.resumeSession() }
+            )
+        case .alerting:
+            return nil
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func formatDuration(_ seconds: TimeInterval) -> String {
+        let total = Int(seconds.rounded())
+        let h = total / 3600
+        let m = (total % 3600) / 60
+        if h > 0 { return "\(h)h \(m)m" }
+        if m > 0 { return "\(m)m" }
+        return "\(total)s"
+    }
 }
 
-// MARK: - Color Extension
+// MARK: - Stat mini card
+
+private struct StatMiniCard: View {
+    let label: String
+    let value: String
+    let suffix: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(label)
+                .font(.system(size: 10, weight: .medium, design: .monospaced))
+                .foregroundColor(Color(hex: "E8954A"))
+                .tracking(1.2)
+
+            Text(value)
+                .font(.system(size: 26, weight: .semibold))
+                .foregroundColor(Color(hex: "F2F2F5"))
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+
+            Text(suffix)
+                .font(.system(size: 11))
+                .foregroundColor(Color(hex: "8A8A96"))
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(Color(hex: "18181F"))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.white.opacity(0.07), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+// MARK: - Session bar action descriptor
+
+private struct SessionBarAction {
+    let label: String
+    let a11y: String
+    let tint: Color
+    let background: Color
+    let run: () -> Void
+}
+
+// MARK: - Color extension
 
 extension Color {
     init(hex: String) {
@@ -233,11 +347,13 @@ extension Color {
 }
 
 #Preview {
-    let schema = Schema([Session.self, BreakRecord.self, UserSettings.self, PetState.self, EyeExerciseRecord.self])
+    let schema = Schema([
+        Session.self, BreakRecord.self, UserSettings.self,
+        PetState.self, EyeExerciseRecord.self, PickupSession.self,
+    ])
     let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: schema, configurations: config)
     HomeView()
         .environment(SessionManager())
-        .environment(PetMoodEngine())
         .modelContainer(container)
 }

@@ -1,142 +1,95 @@
 # Eyescape v2 Roadmap
 
-> **Product Vision**: Eyescape is a digital pet + eye health companion. Your pet's mood reflects how well you've been protecting your eyes. Take breaks, do exercises, keep your pet happy.
+> **Product Vision (v2 redirected, 2026-05)**: Eyescape is a serious eye-care
+> companion. It surfaces the screen-time signals you actually need ("how long
+> have you been on this without a break?"), enforces 20-20-20, and gives you
+> evidence-based eye exercises you can launch in two taps. Apple Screen Time
+> shows you data; Eyescape changes behaviour.
+
+> Originally v2 was the digital-pet system. Pet-related design and code now
+> live under "Parking Lot" at the bottom of this file. SwiftData schema and
+> the existing pet engine are preserved so v1 users can upgrade safely, but
+> all UI entry points have been removed.
 
 ---
 
-## Phase 1 — Pet System (v2.0)
-**目标**: 情感粘性。让用户每天打开 app 看宠物状态。
+## Phase 1 — Screen Time + 20-20-20 + Eye Exercises (v2.0)
+**Goal**: ship a real eye-care app, not a toy.
 
-### 核心功能
-- [ ] **数字宠物 (Digital Pet)**
-  - 像素风格小动物，琥珀色调
-  - 情绪系统: Happy / Okay / Tired / Sad (4 levels)
-  - 情绪 = 当日护眼分数计算 (break compliance rate)
-  - 每日分数: 完成 break ×10分, 跳过 break -5分, 连续天数 bonus
+### Foundations (done in this branch)
+- [x] **Pet system frozen** — UI removed, code preserved (RootView / HomeView / EyescapeWidgetLiveActivity / Eyescape_appApp wiring all stripped of pet references; Models/PetState.swift, Features/PetMoodEngine.swift, Features/PetNotificationManager.swift, Views/PetView.swift retained as dead code).
+- [x] **Local pickup tracking** — new `PickupSession` SwiftData model, populated by `SessionManager.handleForeground/handleBackground` with sub-5-second debounce. Added to schema list.
+- [x] **ScreenTimeAggregator** — pure Swift functions for today's total / pickup count / average pickup / longest pickup / 20-min compliance / exercises / break-take rate. Unit-tested in `ScreenTimeAggregatorTests`.
+- [x] **Eye exercise library** — three evidence-based routines:
+  - 2 min Quick rest (20-20-20 + active blinks · AAO/AOA)
+  - 3 min Palming (PubMed PMC4932063)
+  - 5 min Classic exercise (PRC MoE 2008 official, A-grade in 2023 中西医结合诊疗指南)
+- [x] **EyeExerciseSession view** — full-screen runner reusing the BreakView breathing-dot animation; writes `EyeExerciseRecord` only on full completion.
+- [x] **HomeView 3-segment rewrite** — top: 4-card stats grid (today total / avg pickup / 20-min compliance / exercises today); middle: ExerciseCard with 3 length pills; bottom: SessionStatusBar with state-aware dot + Start/Pause/Resume. Auto-starts the protect session on appear.
+- [x] **AnalyticsView fixes** — `["M","Tu","W","Th","F","Sa","Su"]` for the weekly chart, accessibility labels per bar, "This week" pseudo-button replaced with a static range label.
+- [x] **ScreenTimeAuthManager** — wraps FamilyControls authorization, exposes `.notDetermined / .denied / .approved`. Wired into Settings as a "Connect Screen Time" CTA.
+- [x] **DeviceActivityReport extension scaffold** — `EyescapeReportExtension.swift`, `DailyActivityReport.swift`, `DailyActivityView.swift`, `Info.plist` staged in `DeviceActivityReportExtension/`. Need Xcode UI to create the actual target.
 
-- [ ] **宠物动画状态**
-  - Idle: 小幅呼吸动画
-  - Happy: 轻微跳动 + 闪光
-  - Tired: 慢速眨眼 + 耷拉
-  - Sad: 眼泪 pixel drop 动画
-  - Exercise: 专属运动动画 (配合 eye exercise)
+### What's left for v2.0 ship
+- [ ] **Xcode UI work** (per `docs/family-controls-application.md`):
+  - Add Family Controls capability on main target.
+  - Create the Device Activity Report extension target, drop in the staged files.
+  - Configure App Group `group.com.eyescape.shared`.
+  - Wire the `DeviceActivityReport(.daily, filter:)` embed into AnalyticsView.
+- [ ] **Real-device QA on paid developer account** (sideload, no entitlement approval needed at this stage).
+- [ ] **Submit Family Controls entitlement application** (main app + extension together, from Account Holder).
+- [ ] **TestFlight after entitlement granted**.
 
-- [ ] **眼部练习 (Eye Exercises)**
-  - 休息时提供 3 种可解锁练习
-  - 完成练习 → 宠物 +5 情绪值 + 特效动画
-  - 练习类型: 20-20-20 / 眼球滚动 / 远近交替
+### v2.1 polish
+- [ ] **AnalyticsView range picker** — Day / Week / Month real toggle (currently a static "LAST 7 DAYS" tag).
+- [ ] **AI insights v2** — replace the existing rule engine with insights derived from PickupSession + ExerciseRecord (eg. "your evenings run long — try a 2-min Quick rest at 8pm").
+- [ ] **Onboarding** — first-launch flow that explains 20-20-20, walks through Family Controls authorization, sets reminder interval. Currently the user lands directly on HomeView.
+- [ ] **a11y sweep** — finish what TODOS.md flagged.
 
-- [ ] **DI 宠物头像**
-  - 灵动岛 compact leading: 宠物像素头像 (替换 amber dot)
-  - 宠物状态与 DI 颜色联动 (happy=amber, sad=蓝灰)
-
-- [ ] **HomeView 重设计**
-  - 移除 Start Session 按钮
-  - 宠物居中显示，占主要视觉面积
-  - 宠物下方: 今日分数 + 情绪标签
-  - 底部: 当前 session 状态 (小卡片)
-
-- [ ] **Session 自动启动**
-  - 打开 app = 自动开始 session (不需要手动 Start)
-  - 关闭 app / 锁屏 = session 持续后台运行
-  - 首次启动: 引导页说明机制
-
-### 数据模型扩展
-```swift
-@Model class PetState {
-    var name: String           // 用户起名
-    var totalScore: Int        // 历史累计分
-    var streak: Int            // 连续天数
-    var lastActiveDate: Date
-    var unlockedExercises: [String]  // 已解锁练习 ID
-    var mood: PetMood          // computed from today's score
-}
-
-enum PetMood: Int, Codable {
-    case sad = 0, tired = 1, okay = 2, happy = 3
-}
-```
-
-### 里程碑
-| 周 | 目标 |
-|----|------|
-| Week 1 | 宠物像素画 + 基础动画 (SwiftUI Canvas / SpriteKit) |
-| Week 2 | 情绪计算逻辑 + PetState SwiftData 模型 |
-| Week 3 | HomeView 重设计 + 自动 Session 启动 |
-| Week 4 | 眼部练习 UI + 宠物互动动画 |
-| Week 5 | DI 宠物头像 + TestFlight Beta |
+### v2.2 deeper integration
+- [ ] **DeviceActivityMonitor extension** — fire 20-20-20 alerts based on system-wide usage (not just Eyescape's own foreground time). Requires the same entitlement; piggyback on the existing application.
+- [ ] **App-specific compliance** — surface the 3 apps you use most often without a 20-min break.
+- [ ] **Streak + reminders** — daily exercise streak, optional evening "did you do your eyes today?" notification.
 
 ---
 
-## Phase 2 — Pro 功能升级 + 打磨 (v2.1)
-**目标**: 提升 Pro 转化，完善核心体验。
+## Parking Lot — v3+ (re-evaluate later)
 
-- [ ] **宠物起名** — 首次启动引导，Pro 用户可改名
-- [ ] **宠物皮肤解锁** — Pro: 2 额外皮肤 (夜间版 / 彩虹版)
-- [ ] **Pro 设置 Slider 实时预览** — 调整间隔时宠物实时反应
-- [ ] **Analytics v2** — 宠物心情趋势图 + 周/月视图
-- [ ] **连续天数 Streak** — 专属 UI + 打破提醒通知
-- [ ] **BreakView 练习选择** — 休息时显示练习卡片
-- [ ] **a11y 全面补齐** — TODOS.md 中所有 a11y 项
-- [ ] **AnalyticsView bar label 修复** — ["M","Tu","W","Th","F","Sa","Su"]
-- [ ] **StoreKit 错误处理** — 网络失败提示 + 重试 (TODOS.md P1)
+These are not killed, just frozen. Pet-system code is intentionally preserved for two reasons: (1) avoid SwiftData migration breakage for v1 users, (2) keep the option open if user research shows pet-style affect matters.
 
----
+### Frozen — Digital Pet (was v2 Phase 1)
 
-## Phase 3 — Screen Time API 监控 (v3.0)
-**目标**: 无感监控，自动护眼。需要 Apple Family Controls 授权。
+- [ ] **Digital Pet** — pixel-style amber animal, 4-mood emotion system, daily score driven by break compliance. Files preserved: `Models/PetState.swift`, `Features/PetMoodEngine.swift`, `Features/PetNotificationManager.swift`, `Views/PetView.swift`, `Eyescape app/cat-pixel/` GIF assets.
+- [ ] **Pet animation states** — Idle/Happy/Tired/Sad/Exercise. Currently coded against the `cat-pixel` GitHub raw URLs.
+- [ ] **DI pet avatar** — was rendered in EyescapeWidgetLiveActivity compactLeading/minimal/expanded; replaced with a static `eye.fill` glyph in the same amber.
+- [ ] **HomeView pet-centric layout** — replaced with the 3-segment data view above. The original `petSection` is deleted from HomeView; restoring it would require re-adding the `@Environment(PetMoodEngine.self)` + the `showPetBubble` flow.
+- [ ] **Pet naming, skin unlocks, mood trend chart** — all Pro upsells from the pet-era plan; archived.
 
-> ⚠️ **风险**: Screen Time API 需要向 Apple 申请特殊 entitlement，审核周期不确定。v1/v2 期间并行申请，获批后启动 Phase 3。
+Re-open this section when (a) we have a clear thesis that affect-driven engagement outperforms pure data UX for retention, or (b) we want a kid-targeted variant of Eyescape.
 
-- [ ] **DeviceActivityMonitor Extension**
-  - 监控用户使用手机时长
-  - 每 20 分钟 (可配置) 触发护眼提醒
-  - 不需要 app 在前台
-
-- [ ] **App-specific 护眼模式** (v3 Pro)
-  - 选择特定 app (抖音/微信等) 触发更频繁提醒
-  - 宠物对高风险使用有专属反应动画
-
-- [ ] **背景监控**
-  - Session 不依赖 app 打开
-  - 真正的"无感"护眼
-
-### Apple 授权申请
-- 申请时间: v1 上架后立即提交
-- 预计等待: 2-8 周
-- 降级方案: Phase 3 不可用时，v1/v2 模式继续正常工作
+### Frozen — Focus App
+**Status**: separate codebase, was tentatively planned as a sister app sharing Eyescape's session loop. No code work this cycle.
 
 ---
 
-## Focus App — 独立项目
-**时间线**: Eyescape v2 Beta 期间并行开发
+## Outstanding from v1 (still applies)
 
-- 简洁的 +/- 任务列表
-- 番茄钟 / 深度工作计时
-- 每周 / 每月任务完成统计
-- 可能共享 Eyescape 护眼提醒逻辑
-
----
-
-## v1 待处理 (上线前)
-来自 TODOS.md — 上线前必须解决:
-
-| 优先级 | 项目 | 文件 |
-|--------|------|------|
-| P1 | StoreKit 购买错误处理 | StoreKitManager.swift, PaywallView.swift |
-| P2 | startActivity() 失败降级 | SessionManager.swift |
-| Design | a11y 标签补全 | 所有 Views |
-| Design | Bar chart label 歧义修复 | AnalyticsView.swift:204 |
+| Priority | Item | Where |
+|----------|------|-------|
+| P1 | StoreKit purchase error UX | `Features/StoreManager.swift`, `Views/PaywallView.swift` |
+| P2 | `startActivity()` failure fallback | `Features/SessionManager.swift` |
+| Design | a11y label sweep | all Views |
+| ✓ Done | Bar-chart label ambiguity | `AnalyticsView.swift` (fixed in this branch) |
 
 ---
 
-## 技术选型备忘
+## Tech notes
 
-| 功能 | 技术 | 备注 |
-|------|------|------|
-| 宠物动画 | SwiftUI Canvas + withAnimation | 简单帧动画；复杂动画用 SpriteKit |
-| 像素图资产 | .png @1x/@2x/@3x | Aseprite 导出，Asset Catalog |
-| 情绪计算 | Pure Swift, no framework | 每日 break records 聚合 |
-| 分数持久化 | SwiftData PetState | 已有 ModelContainer |
-| DI 像素头像 | SwiftUI Image (pixel asset) | ActivityKit content state 传 mood enum |
-| Screen Time | DeviceActivityMonitor Extension | Phase 3，需 Apple 授权 |
+| Concern | Choice | Notes |
+|---------|--------|-------|
+| Pickup tracking | `PickupSession` @Model + scenePhase | Local-only, populated by SessionManager. Real device-wide pickups land in v2.2 via DeviceActivityMonitor. |
+| Aggregation | Pure Swift `ScreenTimeAggregator` | No SwiftData / framework deps so it's trivial to test and reuse from the widget. |
+| Exercise content | Hard-coded enum `EyeExercise` | Three routines are stable and not user-editable; no need for a database. |
+| Family Controls | `AuthorizationCenter.shared.requestAuthorization(for: .individual)` | Self-monitoring mode only, never `.child`. |
+| DeviceActivity report | Separate extension target | Apple-mandated sandbox; cross-process via App Group. |
+| Schema migration | Add `PickupSession.self` to `sharedModelContainer` schema | New model, no migration needed for existing v1 users. PetState retained for backward compat. |

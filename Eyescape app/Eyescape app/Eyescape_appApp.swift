@@ -21,6 +21,7 @@ struct Eyescape_appApp: App {
             UserSettings.self,
             PetState.self,
             EyeExerciseRecord.self,
+            PickupSession.self,
         ])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {
@@ -33,7 +34,7 @@ struct Eyescape_appApp: App {
     // @Observable uses @State, not @StateObject
     @State private var sessionManager  = SessionManager()
     @State private var storeManager    = StoreManager()
-    @State private var petMoodEngine   = PetMoodEngine()
+    @State private var screenTimeAuth  = ScreenTimeAuthManager()
     @State private var stoppedOnBackground = false
 
     var body: some Scene {
@@ -41,7 +42,7 @@ struct Eyescape_appApp: App {
             RootView()
                 .environment(sessionManager)
                 .environment(storeManager)
-                .environment(petMoodEngine)
+                .environment(screenTimeAuth)
                 // Handle deep links from Live Activity buttons
                 .onOpenURL { url in
                     guard url.scheme == "eyescape" else { return }
@@ -65,6 +66,7 @@ struct Eyescape_appApp: App {
                     }
                 }
             case .background, .inactive:
+                sessionManager.handleBackground()       // Close pickup + alerting → confirmBreak.
                 sessionManager.stopSession()            // Screen off / call / interruption → cancel session.
                 stoppedOnBackground = true
             @unknown default:

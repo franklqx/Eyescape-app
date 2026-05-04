@@ -26,17 +26,11 @@ struct AnalyticsView: View {
                                     .foregroundColor(Color(hex: "F2F2F5"))
                             }
                             Spacer()
-                            Text("This week")
-                                .font(.system(size: 10, weight: .medium, design: .monospaced))
-                                .foregroundColor(Color(hex: "E8954A"))
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color(hex: "E8954A").opacity(0.12))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 4)
-                                        .stroke(Color(hex: "E8954A").opacity(0.25), lineWidth: 1)
-                                )
-                                .clipShape(RoundedRectangle(cornerRadius: 4))
+                            // Static range marker — looks like a tag, not a button.
+                            Text("LAST 7 DAYS")
+                                .font(.system(size: 9, weight: .medium, design: .monospaced))
+                                .foregroundColor(Color(hex: "8A8A96"))
+                                .tracking(1.0)
                         }
                         .padding(.bottom, 24)
 
@@ -48,6 +42,15 @@ struct AnalyticsView: View {
                             weeklyTrend
                             Spacer().frame(height: 24)
                             aiInsightsSection
+                            // System screen-time data lives in the Daily report
+                            // extension. After Phase 3 entitlement approval +
+                            // extension target wiring, embed it here:
+                            //
+                            //   import DeviceActivity
+                            //   DeviceActivityReport(.daily, filter: filter)
+                            //       .frame(height: 220)
+                            //
+                            // See docs/family-controls-application.md.
                         }
                     }
                     .padding(.horizontal, 24)
@@ -122,7 +125,7 @@ struct AnalyticsView: View {
                 .tracking(1.2)
 
             HStack(alignment: .bottom, spacing: 6) {
-                ForEach(Array(weeklyData.enumerated()), id: \.offset) { index, item in
+                ForEach(Array(weeklyData.enumerated()), id: \.offset) { _, item in
                     VStack(spacing: 6) {
                         RoundedRectangle(cornerRadius: 3)
                             .fill(item.isToday ? Color(hex: "E8954A") : barColor(minutes: item.minutes))
@@ -132,6 +135,10 @@ struct AnalyticsView: View {
                             .foregroundColor(item.isToday ? Color(hex: "E8954A") : Color(hex: "8A8A96"))
                     }
                     .frame(maxWidth: .infinity)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(
+                        "\(item.dayLabel)\(item.isToday ? ", today" : ""): \(item.minutes) minutes"
+                    )
                 }
             }
             .frame(height: 72, alignment: .bottom)
@@ -201,7 +208,7 @@ struct AnalyticsView: View {
     private var weeklyData: [DayData] {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: .now)
-        let dayLabels = ["M", "T", "W", "T", "F", "S", "S"]
+        let dayLabels = ["M", "Tu", "W", "Th", "F", "Sa", "Su"]
 
         return (0..<7).map { offset in
             let dayStart = calendar.date(byAdding: .day, value: -(6 - offset), to: today)!

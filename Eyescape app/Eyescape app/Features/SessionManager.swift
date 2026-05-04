@@ -73,6 +73,11 @@ final class SessionManager: NSObject {
     var currentPetMoodRaw: String  = "okay"
     var currentPetColorRaw: String = "gray"
 
+    // Pickup tracking — populated in handleForeground, closed in handleBackground.
+    private var currentPickupId: UUID?
+    /// Pickups shorter than this are treated as accidental wakes and discarded.
+    private static let pickupMinDurationSec: TimeInterval = 5
+
     override init() {
         super.init()
         UNUserNotificationCenter.current().delegate = self
@@ -195,6 +200,7 @@ final class SessionManager: NSObject {
     // MARK: - Scene Phase
 
     func handleForeground() {
+        openPickupIfNeeded()
         if case .active(let session) = state, session.targetDate < .now {
             if !session.wasAlerted {
                 session.wasAlerted = true
@@ -206,6 +212,7 @@ final class SessionManager: NSObject {
     }
 
     func handleBackground() {
+        closeActivePickup()
         // Lock screen while alerting = user completed the break (look away 20 sec).
         if case .alerting = state {
             confirmBreak()
@@ -215,6 +222,32 @@ final class SessionManager: NSObject {
             performPause(session: session, isAuto: true)
             wasAutoPaused = true
         }
+    }
+
+    // MARK: - Pickup Tracking
+
+    private func openPickupIfNeeded() {
+        guard currentPickupId == nil, let context = modelContext else { return }
+        let pickup = PickupSession(startedAt: .now, sessionId: state.currentSession?.id)
+        context.insert(pickup)
+        try? context.save()
+        currentPickupId = pickup.id
+    }
+
+    private func closeActivePickup() {
+        guard let pickupId = currentPickupId, let context = modelContext else { return }
+        defer { currentPickupId = nil }
+        let descriptor = FetchDescriptor<PickupSession>(
+            predicate: #Predicate { $0.id == pickupId }
+        )
+        guard let pickup = (try? context.fetch(descriptor))?.first else { return }
+        let now = Date.now
+        if now.timeIntervalSince(pickup.startedAt) < Self.pickupMinDurationSec {
+            context.delete(pickup)
+        } else {
+            pickup.endedAt = now
+        }
+        try? context.save()
     }
 
     // MARK: - Cold Start Recovery
