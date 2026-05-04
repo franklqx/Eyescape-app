@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eyescape v2 — Warm dual-mode preview</title>
+<style>
+/* ─── Token: Warm Cream (light) ─── */
+:root {
+  --bg: #FAF6ED;
+  --surface: #FFFFFF;
+  --surface-elev: #F1E9D8;
+  --text-primary: #1F1815;
+  --text-secondary: #837569;
+  --text-tertiary: #B5A99B;
+  --amber: #C5631E;
+  --amber-soft: rgba(197,99,30,0.10);
+  --amber-border: rgba(197,99,30,0.22);
+  --sage: #5F7E4F;
+  --sage-soft: rgba(95,126,79,0.10);
+  --sage-border: rgba(95,126,79,0.22);
+  --border: rgba(31,24,21,0.08);
+  --border-strong: rgba(31,24,21,0.14);
+  --shadow-card: 0 1px 2px rgba(31,24,21,0.04), 0 8px 24px rgba(31,24,21,0.06);
+  --tab-bar-bg: rgba(255,255,255,0.85);
+  --frame-shadow: 0 30px 60px rgba(31,24,21,0.18);
+  --device-frame: #d8c9b3;
+  --device-bezel: #e6dccb;
+
+  --page-bg: #ECE3D2;
+}
+
+[data-theme="dark"] {
+  --bg: #16110D;
+  --surface: #1F1812;
+  --surface-elev: #2B231B;
+  --text-primary: #F4ECDF;
+  --text-secondary: #998875;
+  --text-tertiary: #685b4d;
+  --amber: #E89B6A;
+  --amber-soft: rgba(232,155,106,0.13);
+  --amber-border: rgba(232,155,106,0.26);
+  --sage: #9DBA7E;
+  --sage-soft: rgba(157,186,126,0.13);
+  --sage-border: rgba(157,186,126,0.26);
+  --border: rgba(244,236,223,0.07);
+  --border-strong: rgba(244,236,223,0.12);
+  --shadow-card: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3);
+  --tab-bar-bg: rgba(31,24,18,0.9);
+  --frame-shadow: 0 30px 60px rgba(0,0,0,0.6);
+  --device-frame: #2a201a;
+  --device-bezel: #1f1812;
+
+  --page-bg: #0F0B08;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'PingFang SC', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "ss01", "cv11", "tnum"; /* SF stylistic + tabular */
+  background: var(--page-bg);
+  color: var(--text-primary);
+  transition: background 250ms ease, color 250ms ease;
+}
+
+body {
+  padding: 56px 24px 120px;
+  display: flex; flex-direction: column; align-items: center; gap: 56px;
+}
+
+/* ─── Theme toggle ─── */
+.theme-switch {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 100;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-card);
+}
+.theme-switch button {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 7px 16px;
+  border-radius: 100px;
+  cursor: pointer;
+  letter-spacing: -0.1px;
+}
+.theme-switch button.active {
+  background: var(--text-primary);
+  color: var(--bg);
+}
+
+/* ─── Page chrome ─── */
+.page-header {
+  text-align: center;
+  max-width: 720px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.page-header .eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+.page-header h1 {
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: -0.6px;
+  line-height: 1.15;
+}
+.page-header p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.section {
+  display: flex; flex-direction: column; align-items: center; gap: 28px;
+}
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.section-caption {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+  max-width: 560px;
+  line-height: 1.6;
+  margin-top: -12px;
+}
+
+.phones-row {
+  display: flex; gap: 28px; flex-wrap: wrap; justify-content: center; align-items: flex-start;
+}
+
+/* ─── iPhone frame ─── */
+.phone {
+  width: 320px;
+  height: 692px;
+  background: var(--bg);
+  border-radius: 48px;
+  border: 9px solid var(--device-frame);
+  box-shadow: var(--frame-shadow);
+  position: relative;
+  overflow: hidden;
+  transition: background 250ms ease, border-color 250ms ease;
+}
+.phone::before {
+  content: '';
+  position: absolute;
+  top: 11px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 28px;
+  background: #000;
+  border-radius: 20px;
+  z-index: 10;
+}
+.phone-screen {
+  width: 100%;
+  height: 100%;
+  padding: 50px 0 0 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.phone-label {
+  margin-top: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+  letter-spacing: -0.1px;
+}
+.phone-sub {
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.5;
+  max-width: 320px;
+}
+
+/* ─── Screen content ─── */
+.screen {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.screen-content {
+  flex: 1;
+  padding: 28px 22px 0;
+  overflow: hidden;
+}
+
+/* Greeting header */
+.greeting {
+  margin-bottom: 24px;
+}
+.greeting h2 {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+.greeting p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+  letter-spacing: -0.1px;
+}
+
+/* Stat grid */
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: var(--shadow-card);
+}
+.stat-card .label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: -0.1px;
+}
+.stat-card .value {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.7px;
+  line-height: 1;
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.stat-card .value.amber { color: var(--amber); }
+.stat-card .value.sage  { color: var(--sage); }
+.stat-card .suffix {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+  letter-spacing: -0.1px;
+}
+
+/* Exercise card */
+.exercise-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 18px 18px 18px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow-card);
+}
+.exercise-card .heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.heading-glyph {
+  width: 36px; height: 36px;
+  border-radius: 12px;
+  background: var(--amber-soft);
+  color: var(--amber);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.heading-glyph svg { width: 18px; height: 18px; }
+.exercise-card .heading .meta .title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+.exercise-card .heading .meta .sub {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+.exercise-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+.exercise-btn {
+  background: var(--surface-elev);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 13px 8px 14px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 88px;
+  transition: transform 120ms ease;
+}
+.exercise-btn .duration {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+  font-variant-numeric: tabular-nums;
+}
+.exercise-btn .name {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+}
+.exercise-btn .sub {
+  font-size: 10px;
+  color: var(--text-secondary);
+  line-height: 1.3;
+  letter-spacing: -0.1px;
+}
+
+/* Session status bar */
+.status-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 13px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow-card);
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dot.amber { background: var(--amber); box-shadow: 0 0 8px var(--amber-border); }
+.dot.amber-dim { background: var(--amber); opacity: 0.35; }
+.dot.amber-pulse { background: var(--amber); box-shadow: 0 0 12px var(--amber); animation: amberPulse 1.4s ease-in-out infinite; }
+.dot.sage { background: var(--sage); }
+@keyframes amberPulse {
+  0%, 100% { box-shadow: 0 0 8px var(--amber); }
+  50%      { box-shadow: 0 0 14px var(--amber), 0 0 24px var(--amber-border); }
+}
+
+.status-bar .label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  flex: 1;
+  letter-spacing: -0.1px;
+}
+.status-bar .label.live { color: var(--text-primary); }
+.status-bar .action {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 100px;
+  background: var(--surface-elev);
+  color: var(--text-secondary);
+  letter-spacing: -0.1px;
+}
+.status-bar .action.amber {
+  color: var(--amber);
+  background: var(--amber-soft);
+}
+
+/* Tab bar */
+.tab-bar {
+  display: flex;
+  border-top: 1px solid var(--border);
+  background: var(--tab-bar-bg);
+  backdrop-filter: blur(20px);
+  padding: 10px 8px 22px;
+}
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: -0.1px;
+}
+.tab svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.tab.active { color: var(--amber); }
+.tab.active svg { fill: currentColor; stroke: currentColor; }
+
+/* ─── Exercise full-screen ─── */
+.exercise-screen {
+  display: flex;
+  flex-direction: column;
+  padding-top: 32px;
+}
+.ex-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 22px 28px;
+}
+.ex-topbar .x {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-secondary);
+  font-size: 16px;
+  border-radius: 100px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.ex-topbar .center {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.ex-topbar .center .crumb {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+  color: var(--text-primary);
+}
+.progress {
+  width: 130px; height: 3px;
+  background: var(--border-strong);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.progress > span {
+  display: block;
+  height: 100%;
+  background: var(--amber);
+  border-radius: 100px;
+}
+.ex-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 30px;
+  gap: 22px;
+}
+.pulse-dot {
+  width: 64px; height: 64px;
+  background: var(--amber);
+  border-radius: 50%;
+  position: relative;
+  box-shadow:
+    0 0 28px var(--amber-border),
+    0 0 80px var(--amber-soft);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--bg);
+  animation: breath 3s ease-in-out infinite;
+}
+@keyframes breath {
+  0%, 100% { transform: scale(1.0); }
+  50%      { transform: scale(1.3); }
+}
+.pulse-dot svg { width: 26px; height: 26px; }
+.ex-content .step-name {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  text-align: center;
+}
+.ex-content .step-instruction {
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.55;
+  letter-spacing: -0.1px;
+}
+.ex-content .countdown {
+  font-size: 60px;
+  font-weight: 200;
+  color: var(--amber);
+  letter-spacing: -2px;
+  margin-top: 14px;
+  font-variant-numeric: tabular-nums;
+  font-family: -apple-system, 'SF Pro Display', sans-serif;
+}
+.ex-skip {
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-secondary);
+  padding: 30px 0 36px;
+  letter-spacing: -0.1px;
+}
+
+/* ─── Analytics ─── */
+.analytics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 24px;
+}
+.analytics-header .left .eyebrow {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: -0.1px;
+}
+.analytics-header .left h2 {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  margin-top: 2px;
+}
+.range-tag {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: -0.1px;
+}
+
+.bigstat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.bigstat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px 14px 15px;
+  box-shadow: var(--shadow-card);
+}
+.bigstat .v {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  display: flex; align-items: baseline; gap: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.bigstat .v .unit {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+.bigstat .v.amber { color: var(--amber); }
+.bigstat .v.sage  { color: var(--sage); }
+.bigstat .l {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+  letter-spacing: -0.1px;
+}
+
+.weekly-trend {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px 16px 14px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow-card);
+}
+.weekly-trend .label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.1px;
+  margin-bottom: 14px;
+}
+.bars {
+  display: flex;
+  gap: 7px;
+  height: 72px;
+  align-items: flex-end;
+}
+.bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  justify-content: flex-end;
+}
+.bar {
+  width: 100%;
+  background: var(--surface-elev);
+  border-radius: 4px;
+}
+.bar.high { background: var(--amber); opacity: 0.7; }
+.bar.today { background: var(--amber); }
+.bar-col .day {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  letter-spacing: -0.1px;
+}
+.bar-col.today .day { color: var(--amber); font-weight: 600; }
+
+.insight-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--sage);
+  border-radius: 14px;
+  padding: 13px 16px;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow-card);
+}
+.insight-card.warn { border-left-color: var(--amber); }
+.insight-card .ttl {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  margin-bottom: 4px;
+}
+.insight-card p {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  letter-spacing: -0.1px;
+}
+
+/* ─── Settings ─── */
+.settings-header {
+  margin-bottom: 24px;
+}
+.settings-header .eyebrow {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: -0.1px;
+}
+.settings-header h2 {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  margin-top: 2px;
+}
+.section-h {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  margin-left: 4px;
+  letter-spacing: -0.1px;
+}
+.settings-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 4px 0;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-card);
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  gap: 12px;
+}
+.settings-row + .settings-row {
+  border-top: 1px solid var(--border);
+}
+.settings-row .left .name {
+  font-size: 14px;
+  letter-spacing: -0.2px;
+}
+.settings-row .left .desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 3px;
+  line-height: 1.4;
+  letter-spacing: -0.1px;
+}
+.connect-btn {
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  padding: 6px 14px;
+  background: var(--amber);
+  border-radius: 100px;
+  letter-spacing: -0.1px;
+}
+.value-tail {
+  font-size: 12px;
+  color: var(--text-secondary);
+  letter-spacing: -0.1px;
+  font-variant-numeric: tabular-nums;
+}
+.value-tail.amber { color: var(--amber); font-weight: 500; }
+.tag-pro {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--amber);
+  background: var(--amber-soft);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  letter-spacing: 0.4px;
+}
+
+/* DI alerting glow on phone */
+.phone.alerting::before {
+  box-shadow: 0 0 16px var(--amber);
+}
+
+/* Compare block */
+.compare-block {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  max-width: 720px;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: var(--shadow-card);
+}
+.compare-col h3 {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 14px;
+  letter-spacing: -0.1px;
+}
+.compare-col h3.now { color: var(--amber); }
+.compare-col h3.before { color: var(--text-tertiary); }
+.compare-col ul { list-style: none; }
+.compare-col li {
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 7px 0 7px 18px;
+  position: relative;
+  line-height: 1.5;
+  letter-spacing: -0.1px;
+}
+.compare-col li::before {
+  position: absolute;
+  left: 0;
+  font-weight: 700;
+}
+.compare-col.before li::before { content: '−'; color: var(--text-tertiary); }
+.compare-col.now li::before { content: '+'; color: var(--amber); }
+.compare-col li b {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Token swatch sample */
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  max-width: 720px;
+  width: 100%;
+}
+.swatch {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.swatch .chip {
+  width: 24px; height: 24px; border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  flex-shrink: 0;
+}
+.swatch .meta {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.swatch .name {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+}
+.swatch .hex {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-feature-settings: "tnum";
+}
+
+.footer {
+  margin-top: 32px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+</style>
+</head>
+<body data-theme="dark">
+
+<div class="theme-switch">
+  <button id="btn-light">Light</button>
+  <button id="btn-dark" class="active">Dark</button>
+</div>
+
+<div class="page-header">
+  <div class="eyebrow">Eyescape · Warm dual mode v0.1</div>
+  <h1>Soft. Warm. Less mono. Both modes.</h1>
+  <p>Direction B: 暖调 dual-mode. 主色 terracotta(亮)/ peach amber(暗) + sage 第二色用于"达成 / 休息"。圆角 16-20pt,字体回 SF Pro 默认,数字 tabular-nums。</p>
+</div>
+
+<!-- Token swatches -->
+<div class="section">
+  <div class="section-label">Token swatches (current mode)</div>
+  <div class="swatches">
+    <div class="swatch"><div class="chip" style="background: var(--bg)"></div><div class="meta"><span class="name">Background</span><span class="hex" id="hx-bg"></span></div></div>
+    <div class="swatch"><div class="chip" style="background: var(--surface)"></div><div class="meta"><span class="name">Surface</span><span class="hex" id="hx-surface"></span></div></div>
+    <div class="swatch"><div class="chip" style="background: var(--surface-elev)"></div><div class="meta"><span class="name">Surface elev</span><span class="hex" id="hx-elev"></span></div></div>
+    <div class="swatch"><div class="chip" style="background: var(--text-primary)"></div><div class="meta"><span class="name">Text primary</span><span class="hex" id="hx-tp"></span></div></div>
+    <div class="swatch"><div class="chip" style="background: var(--text-secondary)"></div><div class="meta"><span class="name">Text secondary</span><span class="hex" id="hx-ts"></span></div></div>
+    <div class="swatch"><div class="chip" style="background: var(--amber)"></div><div class="meta"><span class="name">Amber accent</span><span class="hex" id="hx-amber"></span></div></div>
+    <div class="swatch"><div class="chip" style="background: var(--sage)"></div><div class="meta"><span class="name">Sage 2nd</span><span class="hex" id="hx-sage"></span></div></div>
+  </div>
+</div>
+
+<!-- Three core screens -->
+<div class="section">
+  <div class="section-label">Three core screens</div>
+  <div class="section-caption">切换右上角 Light/Dark 看双模式效果。圆角更大,卡片有了阴影,文字变暖,sage 用来表达"已达成/休息"语义。</div>
+
+  <div class="phones-row">
+
+    <!-- ── PHONE 1: HOME (active) ── -->
+    <div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="screen">
+            <div class="screen-content">
+              <div class="greeting">
+                <h2>Good afternoon.</h2>
+                <p>Your eyes today</p>
+              </div>
+
+              <div class="stat-grid">
+                <div class="stat-card">
+                  <div class="label">Today</div>
+                  <div class="value">3h 24m</div>
+                  <div class="suffix">screen time</div>
+                </div>
+                <div class="stat-card">
+                  <div class="label">Avg pickup</div>
+                  <div class="value">14m</div>
+                  <div class="suffix">per session</div>
+                </div>
+                <div class="stat-card">
+                  <div class="label">≤ 20 min</div>
+                  <div class="value sage">82%</div>
+                  <div class="suffix">compliance</div>
+                </div>
+                <div class="stat-card">
+                  <div class="label">Exercises</div>
+                  <div class="value sage">2</div>
+                  <div class="suffix">today</div>
+                </div>
+              </div>
+
+              <div class="exercise-card">
+                <div class="heading">
+                  <div class="heading-glyph">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
+                  </div>
+                  <div class="meta">
+                    <div class="title">Eye exercises</div>
+                    <div class="sub">Take a moment for your eyes</div>
+                  </div>
+                </div>
+                <div class="exercise-buttons">
+                  <div class="exercise-btn">
+                    <div class="duration">2 min</div>
+                    <div class="name">Quick rest</div>
+                    <div class="sub">Look far, blink</div>
+                  </div>
+                  <div class="exercise-btn">
+                    <div class="duration">3 min</div>
+                    <div class="name">Palming</div>
+                    <div class="sub">Cover &amp; breathe</div>
+                  </div>
+                  <div class="exercise-btn">
+                    <div class="duration">5 min</div>
+                    <div class="name">Classic</div>
+                    <div class="sub">Six points</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="status-bar">
+                <span class="dot amber"></span>
+                <div class="label">Auto-protecting your eyes</div>
+                <div class="action">Pause</div>
+              </div>
+            </div>
+
+            <div class="tab-bar">
+              <div class="tab active">
+                <svg viewBox="0 0 24 24"><path d="M3 12 12 3l9 9v9a2 2 0 0 1-2 2h-4v-7H10v7H6a2 2 0 0 1-2-2v-9z"/></svg>
+                Home
+              </div>
+              <div class="tab">
+                <svg viewBox="0 0 24 24"><path d="M3 21V10m6 11V4m6 17v-7m6 7V8"/></svg>
+                Insights
+              </div>
+              <div class="tab">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.36.16.66.42.85.74"/></svg>
+                Settings
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Home — auto-protect</div>
+      <div class="phone-sub">2 sage values 标记今日"达成"指标 (合规率 + 已练习)。</div>
+    </div>
+
+    <!-- ── PHONE 2: EXERCISE ── -->
+    <div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="screen exercise-screen">
+            <div class="ex-topbar">
+              <div class="x">✕</div>
+              <div class="center">
+                <div class="crumb">Quick rest</div>
+                <div class="progress"><span style="width: 65%"></span></div>
+              </div>
+              <div class="x" style="visibility:hidden">✕</div>
+            </div>
+            <div class="ex-content">
+              <div class="pulse-dot">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
+              </div>
+              <div class="step-name">Active blinks</div>
+              <div class="step-instruction">Close your eyes for two seconds. Open. Squeeze tight for two seconds. Release. Repeat slowly.</div>
+              <div class="countdown">00:42</div>
+            </div>
+            <div class="ex-skip">Skip step</div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Eye exercise — running</div>
+      <div class="phone-sub">呼吸点保留(BreakView 风格).<br>倒计时去掉了 mono,改用 SF Display thin。</div>
+    </div>
+
+    <!-- ── PHONE 3: INSIGHTS ── -->
+    <div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="screen">
+            <div class="screen-content">
+              <div class="analytics-header">
+                <div class="left">
+                  <div class="eyebrow">Insights</div>
+                  <h2>Your eye health</h2>
+                </div>
+                <div class="range-tag">Last 7 days</div>
+              </div>
+
+              <div class="bigstat-grid">
+                <div class="bigstat">
+                  <div class="v">3h 24m</div>
+                  <div class="l">Today total</div>
+                </div>
+                <div class="bigstat">
+                  <div class="v">14<span class="unit">min</span></div>
+                  <div class="l">Avg session</div>
+                </div>
+                <div class="bigstat">
+                  <div class="v amber">42<span class="unit">min</span></div>
+                  <div class="l">Longest session</div>
+                </div>
+                <div class="bigstat">
+                  <div class="v sage">82<span class="unit">%</span></div>
+                  <div class="l">Break rate</div>
+                </div>
+              </div>
+
+              <div class="weekly-trend">
+                <div class="label">Daily screen time</div>
+                <div class="bars">
+                  <div class="bar-col"><div class="bar" style="height: 30%"></div><div class="day">M</div></div>
+                  <div class="bar-col"><div class="bar high" style="height: 70%"></div><div class="day">Tu</div></div>
+                  <div class="bar-col"><div class="bar" style="height: 45%"></div><div class="day">W</div></div>
+                  <div class="bar-col"><div class="bar high" style="height: 80%"></div><div class="day">Th</div></div>
+                  <div class="bar-col"><div class="bar" style="height: 55%"></div><div class="day">F</div></div>
+                  <div class="bar-col"><div class="bar" style="height: 25%"></div><div class="day">Sa</div></div>
+                  <div class="bar-col today"><div class="bar today" style="height: 50%"></div><div class="day">Su</div></div>
+                </div>
+              </div>
+
+              <div class="insight-card warn">
+                <div class="ttl">Long session detected</div>
+                <p>Your longest session was 42 min. Try to break it down — 20-min blocks reduce eye fatigue.</p>
+              </div>
+              <div class="insight-card">
+                <div class="ttl">Great break streak</div>
+                <p>82% break completion this week. Keep going — your eyes are listening.</p>
+              </div>
+            </div>
+
+            <div class="tab-bar">
+              <div class="tab">
+                <svg viewBox="0 0 24 24"><path d="M3 12 12 3l9 9v9a2 2 0 0 1-2 2h-4v-7H10v7H6a2 2 0 0 1-2-2v-9z"/></svg>Home
+              </div>
+              <div class="tab active">
+                <svg viewBox="0 0 24 24"><path d="M3 21V10m6 11V4m6 17v-7m6 7V8"/></svg>Insights
+              </div>
+              <div class="tab">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Insights — fixed labels</div>
+      <div class="phone-sub">Sage 表示合规达成,Amber 表示警示峰值。<br>左边框颜色对应 insight 性质。</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- States row -->
+<div class="section">
+  <div class="section-label">States — idle &amp; alerting &amp; settings</div>
+
+  <div class="phones-row">
+
+    <!-- IDLE -->
+    <div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="screen">
+            <div class="screen-content">
+              <div class="greeting">
+                <h2>Good evening.</h2>
+                <p>Your eyes today</p>
+              </div>
+              <div class="stat-grid">
+                <div class="stat-card"><div class="label">Today</div><div class="value">12m</div><div class="suffix">screen time</div></div>
+                <div class="stat-card"><div class="label">Avg pickup</div><div class="value">12m</div><div class="suffix">per session</div></div>
+                <div class="stat-card"><div class="label">≤ 20 min</div><div class="value sage">100%</div><div class="suffix">compliance</div></div>
+                <div class="stat-card"><div class="label">Exercises</div><div class="value">0</div><div class="suffix">today</div></div>
+              </div>
+              <div class="exercise-card">
+                <div class="heading">
+                  <div class="heading-glyph">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg>
+                  </div>
+                  <div class="meta">
+                    <div class="title">Eye exercises</div>
+                    <div class="sub">Take a moment for your eyes</div>
+                  </div>
+                </div>
+                <div class="exercise-buttons">
+                  <div class="exercise-btn"><div class="duration">2 min</div><div class="name">Quick rest</div><div class="sub">Look far, blink</div></div>
+                  <div class="exercise-btn"><div class="duration">3 min</div><div class="name">Palming</div><div class="sub">Cover &amp; breathe</div></div>
+                  <div class="exercise-btn"><div class="duration">5 min</div><div class="name">Classic</div><div class="sub">Six points</div></div>
+                </div>
+              </div>
+              <div class="status-bar">
+                <span class="dot amber-dim"></span>
+                <div class="label">Auto-protect off</div>
+                <div class="action amber">Start</div>
+              </div>
+            </div>
+            <div class="tab-bar">
+              <div class="tab active"><svg viewBox="0 0 24 24"><path d="M3 12 12 3l9 9v9a2 2 0 0 1-2 2h-4v-7H10v7H6a2 2 0 0 1-2-2v-9z"/></svg>Home</div>
+              <div class="tab"><svg viewBox="0 0 24 24"><path d="M3 21V10m6 11V4m6 17v-7m6 7V8"/></svg>Insights</div>
+              <div class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Home — idle</div>
+      <div class="phone-sub">点 dim,Start 按钮提示。</div>
+    </div>
+
+    <!-- ALERTING -->
+    <div>
+      <div class="phone alerting">
+        <div class="phone-screen">
+          <div class="screen">
+            <div class="screen-content">
+              <div class="greeting">
+                <h2>Good afternoon.</h2>
+                <p>Your eyes today</p>
+              </div>
+              <div class="stat-grid">
+                <div class="stat-card"><div class="label">Today</div><div class="value">3h 24m</div><div class="suffix">screen time</div></div>
+                <div class="stat-card"><div class="label">Avg pickup</div><div class="value">14m</div><div class="suffix">per session</div></div>
+                <div class="stat-card"><div class="label">≤ 20 min</div><div class="value sage">82%</div><div class="suffix">compliance</div></div>
+                <div class="stat-card"><div class="label">Exercises</div><div class="value sage">2</div><div class="suffix">today</div></div>
+              </div>
+              <div class="exercise-card">
+                <div class="heading">
+                  <div class="heading-glyph">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg>
+                  </div>
+                  <div class="meta">
+                    <div class="title">Eye exercises</div>
+                    <div class="sub">Take a moment for your eyes</div>
+                  </div>
+                </div>
+                <div class="exercise-buttons">
+                  <div class="exercise-btn"><div class="duration">2 min</div><div class="name">Quick rest</div><div class="sub">Look far, blink</div></div>
+                  <div class="exercise-btn"><div class="duration">3 min</div><div class="name">Palming</div><div class="sub">Cover &amp; breathe</div></div>
+                  <div class="exercise-btn"><div class="duration">5 min</div><div class="name">Classic</div><div class="sub">Six points</div></div>
+                </div>
+              </div>
+              <div class="status-bar" style="border-color: var(--amber-border);">
+                <span class="dot amber-pulse"></span>
+                <div class="label live">Time for a break</div>
+              </div>
+            </div>
+            <div class="tab-bar">
+              <div class="tab active"><svg viewBox="0 0 24 24"><path d="M3 12 12 3l9 9v9a2 2 0 0 1-2 2h-4v-7H10v7H6a2 2 0 0 1-2-2v-9z"/></svg>Home</div>
+              <div class="tab"><svg viewBox="0 0 24 24"><path d="M3 21V10m6 11V4m6 17v-7m6 7V8"/></svg>Insights</div>
+              <div class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Home — alerting</div>
+      <div class="phone-sub">脉冲点 + DI 琥珀光晕。BreakView sheet 即将弹出。</div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="screen">
+            <div class="screen-content">
+              <div class="settings-header">
+                <div class="eyebrow">Settings</div>
+                <h2>Preferences</h2>
+              </div>
+
+              <div class="section-h">Screen Time</div>
+              <div class="settings-card">
+                <div class="settings-row">
+                  <div class="left">
+                    <div class="name">System data</div>
+                    <div class="desc">Use real screen-time data from your device.</div>
+                  </div>
+                  <div class="connect-btn">Connect</div>
+                </div>
+              </div>
+
+              <div class="section-h">Reminder</div>
+              <div class="settings-card">
+                <div class="settings-row">
+                  <div class="left">
+                    <div class="name">Interval</div>
+                    <div class="desc">Fixed — 20 min</div>
+                  </div>
+                  <div class="value-tail">20 min</div>
+                </div>
+              </div>
+
+              <div class="section-h">Pro Features</div>
+              <div class="settings-card">
+                <div class="settings-row">
+                  <div class="left">
+                    <div class="name">DI Alert Size <span class="tag-pro">PRO</span></div>
+                    <div class="desc">Dynamic Island expanded height</div>
+                  </div>
+                  <div class="value-tail amber">M</div>
+                </div>
+                <div class="settings-row">
+                  <div class="left">
+                    <div class="name">Haptic on alert <span class="tag-pro">PRO</span></div>
+                    <div class="desc">Vibrate when reminder fires</div>
+                  </div>
+                  <div class="value-tail" style="opacity: 0.4">○</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tab-bar">
+              <div class="tab"><svg viewBox="0 0 24 24"><path d="M3 12 12 3l9 9v9a2 2 0 0 1-2 2h-4v-7H10v7H6a2 2 0 0 1-2-2v-9z"/></svg>Home</div>
+              <div class="tab"><svg viewBox="0 0 24 24"><path d="M3 21V10m6 11V4m6 17v-7m6 7V8"/></svg>Insights</div>
+              <div class="tab active"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Settings — Connect</div>
+      <div class="phone-sub">Connect 改为实心 amber 圆角胶囊,亮度高的 CTA。</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="footer">
+  Eyescape v2 · warm dual-mode v0.1 · 2026-05
+</div>
+
+<script>
+  const body = document.body;
+  const btnLight = document.getElementById('btn-light');
+  const btnDark  = document.getElementById('btn-dark');
+  const tokens = ['bg','surface','elev','tp','ts','amber','sage'];
+  const tokenVar = {
+    bg: '--bg', surface: '--surface', elev: '--surface-elev',
+    tp: '--text-primary', ts: '--text-secondary',
+    amber: '--amber', sage: '--sage'
+  };
+
+  function setTheme(mode) {
+    body.dataset.theme = mode;
+    btnLight.classList.toggle('active', mode === 'light');
+    btnDark.classList.toggle('active', mode === 'dark');
+    requestAnimationFrame(updateSwatches);
+  }
+
+  function updateSwatches() {
+    const cs = getComputedStyle(body);
+    tokens.forEach(t => {
+      const el = document.getElementById('hx-' + t);
+      if (el) el.textContent = cs.getPropertyValue(tokenVar[t]).trim().toUpperCase();
+    });
+  }
+
+  btnLight.addEventListener('click', () => setTheme('light'));
+  btnDark.addEventListener('click', () => setTheme('dark'));
+
+  updateSwatches();
+</script>
+
+</body>
+</html>
