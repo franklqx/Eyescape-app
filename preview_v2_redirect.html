@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eyescape v2 — Redirected (Screen Time + 20-20-20 + Exercises)</title>
+<style>
+:root {
+  --bg: #0C0C10;
+  --surface: #18181F;
+  --surface-elev: #22222C;
+  --text-primary: #F2F2F5;
+  --text-secondary: #8A8A96;
+  --amber: #E8954A;
+  --amber-dim: rgba(232,149,74,0.12);
+  --amber-border: rgba(232,149,74,0.25);
+  --error: #E05454;
+  --border: rgba(255,255,255,0.07);
+  --border-strong: rgba(255,255,255,0.10);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  background: #0a0a0e;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'ss01' on, 'cv11' on;
+}
+
+body {
+  padding: 60px 24px 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 64px;
+}
+
+/* ─── Page chrome ─── */
+.page-header {
+  text-align: center;
+  max-width: 720px;
+}
+.page-header .eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 12px;
+  font-family: 'SF Mono', Menlo, monospace;
+}
+.page-header h1 {
+  font-size: 32px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  letter-spacing: -0.5px;
+}
+.page-header p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+.section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+  color: var(--amber);
+  font-family: 'SF Mono', Menlo, monospace;
+}
+.section-caption {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+  max-width: 560px;
+  line-height: 1.6;
+  margin-top: -12px;
+}
+
+.phones-row {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* ─── iPhone frame ─── */
+.phone {
+  width: 320px;
+  height: 692px;
+  background: var(--bg);
+  border-radius: 44px;
+  border: 8px solid #1f1f24;
+  box-shadow:
+    0 30px 60px rgba(0,0,0,0.6),
+    0 0 0 1px rgba(255,255,255,0.04);
+  position: relative;
+  overflow: hidden;
+}
+.phone::before {
+  /* Dynamic Island */
+  content: '';
+  position: absolute;
+  top: 11px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 28px;
+  background: #000;
+  border-radius: 20px;
+  z-index: 10;
+}
+.phone-screen {
+  width: 100%;
+  height: 100%;
+  padding: 50px 0 0 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.phone-label {
+  margin-top: 16px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--amber);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  text-align: center;
+  font-family: 'SF Mono', Menlo, monospace;
+}
+.phone-sub {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.4;
+  max-width: 320px;
+}
+
+/* ─── Screen content ─── */
+.screen {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.screen-content {
+  flex: 1;
+  padding: 24px 20px 0;
+  overflow: hidden;
+}
+
+/* Greeting header */
+.greeting {
+  margin-bottom: 18px;
+}
+.greeting h2 {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+.greeting p {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 3px;
+}
+
+/* Stat grid */
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 13px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.stat-card .label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--amber);
+  font-family: 'SF Mono', Menlo, monospace;
+}
+.stat-card .value {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  line-height: 1;
+}
+.stat-card .suffix {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+/* Exercise card */
+.exercise-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.exercise-card .heading .label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--amber);
+  font-family: 'SF Mono', Menlo, monospace;
+}
+.exercise-card .heading .title {
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 3px;
+}
+.exercise-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  margin-top: 14px;
+}
+.exercise-btn {
+  background: var(--surface-elev);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 10px;
+  padding: 11px 6px 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 84px;
+}
+.exercise-btn .duration {
+  font-size: 16px;
+  font-weight: 600;
+  font-family: 'SF Mono', Menlo, monospace;
+  letter-spacing: -0.5px;
+}
+.exercise-btn .name {
+  font-size: 10px;
+  font-weight: 500;
+}
+.exercise-btn .sub {
+  font-size: 9px;
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+
+/* Session status bar */
+.status-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dot.amber {
+  background: var(--amber);
+  box-shadow: 0 0 6px rgba(232,149,74,0.6);
+}
+.dot.amber-dim {
+  background: rgba(232,149,74,0.4);
+}
+.dot.amber-pulse {
+  background: var(--amber);
+  box-shadow: 0 0 10px rgba(232,149,74,0.9);
+}
+.status-bar .label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  flex: 1;
+}
+.status-bar .action {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 5px 11px;
+  border-radius: 100px;
+  background: var(--surface-elev);
+  color: var(--text-secondary);
+}
+.status-bar .action.amber {
+  color: var(--amber);
+  background: var(--amber-dim);
+}
+
+/* Tab bar */
+.tab-bar {
+  display: flex;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  padding: 10px 8px 22px;
+}
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: var(--text-secondary);
+  font-size: 9px;
+  font-weight: 500;
+}
+.tab svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.tab.active { color: var(--amber); }
+.tab.active svg { fill: currentColor; stroke: currentColor; }
+
+/* ─── Exercise full-screen ─── */
+.exercise-screen {
+  display: flex;
+  flex-direction: column;
+  padding-top: 30px;
+}
+.ex-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px 24px;
+}
+.ex-topbar .x {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+.ex-topbar .center {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.ex-topbar .center .crumb {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  color: var(--amber);
+  font-family: 'SF Mono', Menlo, monospace;
+}
+.progress {
+  width: 130px; height: 3px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.progress > span {
+  display: block;
+  height: 100%;
+  background: var(--amber);
+  border-radius: 100px;
+}
+.ex-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 28px;
+  gap: 20px;
+}
+.pulse-dot {
+  width: 56px; height: 56px;
+  background: var(--amber);
+  border-radius: 50%;
+  position: relative;
+  box-shadow:
+    0 0 22px rgba(232,149,74,0.6),
+    0 0 60px rgba(232,149,74,0.25);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--bg);
+  animation: breath 3s ease-in-out infinite;
+}
+@keyframes breath {
+  0%, 100% { transform: scale(1.0); }
+  50%      { transform: scale(1.3); }
+}
+.pulse-dot svg { width: 22px; height: 22px; }
+.ex-content .step-name {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  text-align: center;
+}
+.ex-content .step-instruction {
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.5;
+}
+.ex-content .countdown {
+  font-size: 52px;
+  font-weight: 200;
+  font-family: 'SF Mono', Menlo, monospace;
+  color: var(--amber);
+  letter-spacing: -1px;
+  margin-top: 12px;
+}
+.ex-skip {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 28px 0 32px;
+}
+
+/* ─── Analytics ─── */
+.analytics-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 22px;
+}
+.analytics-header .left .eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  color: var(--amber);
+  font-family: 'SF Mono', Menlo, monospace;
+  text-transform: uppercase;
+}
+.analytics-header .left h2 {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  margin-top: 3px;
+}
+.range-tag {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  font-family: 'SF Mono', Menlo, monospace;
+  text-transform: uppercase;
+}
+
+.bigstat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.bigstat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 13px;
+}
+.bigstat .v {
+  font-size: 22px;
+  font-family: 'SF Mono', Menlo, monospace;
+  letter-spacing: -0.5px;
+  display: flex; align-items: baseline; gap: 3px;
+}
+.bigstat .v .unit {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.bigstat .v.amber { color: var(--amber); }
+.bigstat .l {
+  font-size: 9px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  letter-spacing: 0.8px;
+  margin-top: 6px;
+}
+
+.weekly-trend {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 14px 12px;
+  margin-bottom: 16px;
+}
+.weekly-trend .label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  color: var(--amber);
+  font-family: 'SF Mono', Menlo, monospace;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.bars {
+  display: flex;
+  gap: 6px;
+  height: 64px;
+  align-items: flex-end;
+}
+.bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  height: 100%;
+  justify-content: flex-end;
+}
+.bar {
+  width: 100%;
+  background: var(--surface-elev);
+  border-radius: 3px;
+}
+.bar.high { background: rgba(232,149,74,0.5); }
+.bar.today { background: var(--amber); }
+.bar-col .day {
+  font-size: 9px;
+  color: var(--text-secondary);
+  font-family: 'SF Mono', Menlo, monospace;
+}
+.bar-col.today .day { color: var(--amber); }
+
+.insight-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--amber);
+  border-radius: 11px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+.insight-card .ttl {
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 4px;
+}
+.insight-card .ttl::before {
+  content: '';
+  width: 5px; height: 5px;
+  background: var(--amber);
+  border-radius: 50%;
+}
+.insight-card p {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  padding-left: 12px;
+}
+
+/* ─── Settings ─── */
+.settings-header {
+  margin-bottom: 22px;
+}
+.settings-header .eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  color: var(--amber);
+  font-family: 'SF Mono', Menlo, monospace;
+  text-transform: uppercase;
+}
+.settings-header h2 {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  margin-top: 3px;
+}
+.section-h {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  color: var(--amber);
+  font-family: 'SF Mono', Menlo, monospace;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.settings-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  padding: 4px 0;
+  margin-bottom: 18px;
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 14px;
+  gap: 10px;
+}
+.settings-row + .settings-row {
+  border-top: 1px solid var(--border);
+}
+.settings-row .left .name {
+  font-size: 13px;
+}
+.settings-row .left .desc {
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+.connect-btn {
+  font-size: 11px;
+  font-weight: 500;
+  font-family: 'SF Mono', Menlo, monospace;
+  color: var(--amber);
+  padding: 4px 10px;
+  background: var(--amber-dim);
+  border: 1px solid var(--amber-border);
+  border-radius: 6px;
+}
+.value-mono {
+  font-size: 11px;
+  font-family: 'SF Mono', Menlo, monospace;
+  color: var(--text-secondary);
+}
+.value-mono.amber { color: var(--amber); }
+
+/* DI alerting glow on phone */
+.phone.alerting::before {
+  box-shadow: 0 0 16px rgba(232,149,74,0.55);
+}
+
+/* Comparison block */
+.compare-block {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  max-width: 700px;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+}
+.compare-col h3 {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--amber);
+  font-family: 'SF Mono', Menlo, monospace;
+  margin-bottom: 12px;
+}
+.compare-col h3.gone { color: var(--text-secondary); }
+.compare-col ul { list-style: none; }
+.compare-col li {
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 6px 0 6px 16px;
+  position: relative;
+  line-height: 1.5;
+}
+.compare-col li::before {
+  position: absolute;
+  left: 0;
+  color: var(--amber);
+}
+.compare-col.gone li::before {
+  content: '×';
+  color: var(--text-secondary);
+}
+.compare-col.now li::before {
+  content: '+';
+  color: var(--amber);
+}
+.compare-col li b {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Footer */
+.footer {
+  margin-top: 32px;
+  font-size: 11px;
+  color: #46464d;
+  text-align: center;
+  font-family: 'SF Mono', Menlo, monospace;
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="eyebrow">Eyescape v2 · Redirect Preview</div>
+  <h1>From digital pet → screen-time + 20-20-20 + eye exercises</h1>
+  <p>Pet UI removed (code preserved for v3+). HomeView restructured into a three-segment data view. New: PickupSession tracking, ScreenTimeAggregator, eye-exercise library (AAO + 教育部 2008), Family Controls scaffold.</p>
+</div>
+
+<!-- ───────────── BEFORE / AFTER ───────────── -->
+<div class="section">
+  <div class="section-label">What changed</div>
+  <div class="compare-block">
+    <div class="compare-col gone">
+      <h3 class="gone">Removed (parked for v3+)</h3>
+      <ul>
+        <li><b>Pet visualization</b> (cat-pixel, mood states)</li>
+        <li>Pet bubble dialogue + tap-to-talk</li>
+        <li>Pet name editing in Settings</li>
+        <li>Cat icon in Dynamic Island compact / minimal / expanded</li>
+        <li>Pet early-bird / bedtime notifications</li>
+        <li>Pet 7-day grace-period mood floor</li>
+      </ul>
+    </div>
+    <div class="compare-col now">
+      <h3>Now (v2.0)</h3>
+      <ul>
+        <li><b>Today stats grid</b>: total · avg pickup · ≤20-min compliance · exercises</li>
+        <li><b>Eye exercises</b>: 2-min Quick rest · 3-min Palming · 5-min Classic (CN MoE)</li>
+        <li><b>Auto-protect on launch</b>: no Start button — just opens watching</li>
+        <li><b>SessionStatusBar</b>: state-aware dot + Pause / Resume / Start</li>
+        <li><b>Connect Screen Time</b> CTA in Settings (Family Controls auth)</li>
+        <li>Amber <code>eye.fill</code> glyph replaces cat in Dynamic Island</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ───────────── SCREENS ───────────── -->
+<div class="section">
+  <div class="section-label">Three core screens</div>
+  <div class="section-caption">All numbers are illustrative samples. Layouts match the actual SwiftUI implementation in <code>HomeView.swift</code>, <code>EyeExerciseSession.swift</code>, <code>AnalyticsView.swift</code>, <code>SettingsView.swift</code>.</div>
+
+  <div class="phones-row">
+
+    <!-- ── PHONE 1: HOME (idle, auto-protect on) ── -->
+    <div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="screen">
+            <div class="screen-content">
+              <div class="greeting">
+                <h2>Good afternoon.</h2>
+                <p>Your eyes today</p>
+              </div>
+
+              <div class="stat-grid">
+                <div class="stat-card">
+                  <div class="label">Today</div>
+                  <div class="value">3h 24m</div>
+                  <div class="suffix">screen time</div>
+                </div>
+                <div class="stat-card">
+                  <div class="label">Avg pickup</div>
+                  <div class="value">14m</div>
+                  <div class="suffix">per session</div>
+                </div>
+                <div class="stat-card">
+                  <div class="label">≤ 20 min</div>
+                  <div class="value">82%</div>
+                  <div class="suffix">compliance</div>
+                </div>
+                <div class="stat-card">
+                  <div class="label">Exercises</div>
+                  <div class="value">2</div>
+                  <div class="suffix">today</div>
+                </div>
+              </div>
+
+              <div class="exercise-card">
+                <div class="heading">
+                  <div class="label">Eye exercises</div>
+                  <div class="title">Take a moment for your eyes</div>
+                </div>
+                <div class="exercise-buttons">
+                  <div class="exercise-btn">
+                    <div class="duration">2 min</div>
+                    <div class="name">Quick rest</div>
+                    <div class="sub">Look far, then blink</div>
+                  </div>
+                  <div class="exercise-btn">
+                    <div class="duration">3 min</div>
+                    <div class="name">Palming</div>
+                    <div class="sub">Cover &amp; breathe</div>
+                  </div>
+                  <div class="exercise-btn">
+                    <div class="duration">5 min</div>
+                    <div class="name">Classic</div>
+                    <div class="sub">Six pressure points</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="status-bar">
+                <span class="dot amber"></span>
+                <div class="label">Auto-protecting your eyes</div>
+                <div class="action">Pause</div>
+              </div>
+            </div>
+
+            <div class="tab-bar">
+              <div class="tab active">
+                <svg viewBox="0 0 24 24"><path d="M3 12 12 3l9 9v9a2 2 0 0 1-2 2h-4v-7H10v7H6a2 2 0 0 1-2-2v-9z"/></svg>
+                Home
+              </div>
+              <div class="tab">
+                <svg viewBox="0 0 24 24"><path d="M3 21V10m6 11V4m6 17v-7m6 7V8"/></svg>
+                Insights
+              </div>
+              <div class="tab">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.36.16.66.42.85.74"/></svg>
+                Settings
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Home — auto-protect</div>
+      <div class="phone-sub">Three segments: stats / exercises / status.<br>Auto-starts session on appear.</div>
+    </div>
+
+    <!-- ── PHONE 2: EXERCISE SESSION (Quick rest step 2) ── -->
+    <div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="screen exercise-screen">
+            <div class="ex-topbar">
+              <div class="x">✕</div>
+              <div class="center">
+                <div class="crumb">Quick rest</div>
+                <div class="progress"><span style="width: 65%"></span></div>
+              </div>
+              <div class="x" style="visibility:hidden">✕</div>
+            </div>
+            <div class="ex-content">
+              <div class="pulse-dot">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
+              </div>
+              <div class="step-name">Active blinks</div>
+              <div class="step-instruction">Close your eyes for two seconds. Open. Squeeze tight for two seconds. Release. Repeat slowly.</div>
+              <div class="countdown">00:42</div>
+            </div>
+            <div class="ex-skip">Skip step</div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Eye exercise — running</div>
+      <div class="phone-sub">Reuses BreakView's breathing dot.<br>Writes EyeExerciseRecord on full completion only.</div>
+    </div>
+
+    <!-- ── PHONE 3: INSIGHTS (Analytics) ── -->
+    <div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="screen">
+            <div class="screen-content">
+              <div class="analytics-header">
+                <div class="left">
+                  <div class="eyebrow">Insights</div>
+                  <h2>Your eye health</h2>
+                </div>
+                <div class="range-tag">LAST 7 DAYS</div>
+              </div>
+
+              <div class="bigstat-grid">
+                <div class="bigstat">
+                  <div class="v">3h 24m</div>
+                  <div class="l">Today total</div>
+                </div>
+                <div class="bigstat">
+                  <div class="v">14<span class="unit">min</span></div>
+                  <div class="l">Avg session</div>
+                </div>
+                <div class="bigstat">
+                  <div class="v">42<span class="unit">min</span></div>
+                  <div class="l">Longest session</div>
+                </div>
+                <div class="bigstat">
+                  <div class="v amber">82<span class="unit">%</span></div>
+                  <div class="l">Break rate</div>
+                </div>
+              </div>
+
+              <div class="weekly-trend">
+                <div class="label">Daily screen time</div>
+                <div class="bars">
+                  <div class="bar-col"><div class="bar" style="height: 30%"></div><div class="day">M</div></div>
+                  <div class="bar-col"><div class="bar high" style="height: 70%"></div><div class="day">Tu</div></div>
+                  <div class="bar-col"><div class="bar" style="height: 45%"></div><div class="day">W</div></div>
+                  <div class="bar-col"><div class="bar high" style="height: 80%"></div><div class="day">Th</div></div>
+                  <div class="bar-col"><div class="bar" style="height: 55%"></div><div class="day">F</div></div>
+                  <div class="bar-col"><div class="bar" style="height: 25%"></div><div class="day">Sa</div></div>
+                  <div class="bar-col today"><div class="bar today" style="height: 50%"></div><div class="day">Su</div></div>
+                </div>
+              </div>
+
+              <div class="insight-card">
+                <div class="ttl">Long session detected</div>
+                <p>Your longest session was 42 min. Extended use increases eye fatigue significantly.</p>
+              </div>
+              <div class="insight-card">
+                <div class="ttl">Great break streak</div>
+                <p>82% break completion this week. Consistent rest keeps eyes healthy long-term.</p>
+              </div>
+            </div>
+
+            <div class="tab-bar">
+              <div class="tab">
+                <svg viewBox="0 0 24 24"><path d="M3 12 12 3l9 9v9a2 2 0 0 1-2 2h-4v-7H10v7H6a2 2 0 0 1-2-2v-9z"/></svg>
+                Home
+              </div>
+              <div class="tab active">
+                <svg viewBox="0 0 24 24"><path d="M3 21V10m6 11V4m6 17v-7m6 7V8"/></svg>
+                Insights
+              </div>
+              <div class="tab">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.36.16.66.42.85.74"/></svg>
+                Settings
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Insights — fixed labels</div>
+      <div class="phone-sub">Day labels: M / Tu / W / Th / F / Sa / Su.<br>Static "Last 7 days" tag, no fake button.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ───────────── HOME STATES + SETTINGS ───────────── -->
+<div class="section">
+  <div class="section-label">States &amp; surfaces</div>
+
+  <div class="phones-row">
+
+    <!-- IDLE / NOT YET STARTED -->
+    <div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="screen">
+            <div class="screen-content">
+              <div class="greeting">
+                <h2>Good evening.</h2>
+                <p>Your eyes today</p>
+              </div>
+              <div class="stat-grid">
+                <div class="stat-card"><div class="label">Today</div><div class="value">12m</div><div class="suffix">screen time</div></div>
+                <div class="stat-card"><div class="label">Avg pickup</div><div class="value">12m</div><div class="suffix">per session</div></div>
+                <div class="stat-card"><div class="label">≤ 20 min</div><div class="value">100%</div><div class="suffix">compliance</div></div>
+                <div class="stat-card"><div class="label">Exercises</div><div class="value">0</div><div class="suffix">today</div></div>
+              </div>
+              <div class="exercise-card">
+                <div class="heading">
+                  <div class="label">Eye exercises</div>
+                  <div class="title">Take a moment for your eyes</div>
+                </div>
+                <div class="exercise-buttons">
+                  <div class="exercise-btn"><div class="duration">2 min</div><div class="name">Quick rest</div><div class="sub">Look far, then blink</div></div>
+                  <div class="exercise-btn"><div class="duration">3 min</div><div class="name">Palming</div><div class="sub">Cover &amp; breathe</div></div>
+                  <div class="exercise-btn"><div class="duration">5 min</div><div class="name">Classic</div><div class="sub">Six pressure points</div></div>
+                </div>
+              </div>
+              <div class="status-bar">
+                <span class="dot amber-dim"></span>
+                <div class="label">Auto-protect off</div>
+                <div class="action amber">Start</div>
+              </div>
+            </div>
+            <div class="tab-bar">
+              <div class="tab active"><svg viewBox="0 0 24 24"><path d="M3 12 12 3l9 9v9a2 2 0 0 1-2 2h-4v-7H10v7H6a2 2 0 0 1-2-2v-9z"/></svg>Home</div>
+              <div class="tab"><svg viewBox="0 0 24 24"><path d="M3 21V10m6 11V4m6 17v-7m6 7V8"/></svg>Insights</div>
+              <div class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Home — idle</div>
+      <div class="phone-sub">User paused or hasn't started yet.<br>Dot dim, "Start" CTA.</div>
+    </div>
+
+    <!-- ALERTING -->
+    <div>
+      <div class="phone alerting">
+        <div class="phone-screen">
+          <div class="screen">
+            <div class="screen-content">
+              <div class="greeting">
+                <h2>Good afternoon.</h2>
+                <p>Your eyes today</p>
+              </div>
+              <div class="stat-grid">
+                <div class="stat-card"><div class="label">Today</div><div class="value">3h 24m</div><div class="suffix">screen time</div></div>
+                <div class="stat-card"><div class="label">Avg pickup</div><div class="value">14m</div><div class="suffix">per session</div></div>
+                <div class="stat-card"><div class="label">≤ 20 min</div><div class="value">82%</div><div class="suffix">compliance</div></div>
+                <div class="stat-card"><div class="label">Exercises</div><div class="value">2</div><div class="suffix">today</div></div>
+              </div>
+              <div class="exercise-card">
+                <div class="heading">
+                  <div class="label">Eye exercises</div>
+                  <div class="title">Take a moment for your eyes</div>
+                </div>
+                <div class="exercise-buttons">
+                  <div class="exercise-btn"><div class="duration">2 min</div><div class="name">Quick rest</div><div class="sub">Look far, then blink</div></div>
+                  <div class="exercise-btn"><div class="duration">3 min</div><div class="name">Palming</div><div class="sub">Cover &amp; breathe</div></div>
+                  <div class="exercise-btn"><div class="duration">5 min</div><div class="name">Classic</div><div class="sub">Six pressure points</div></div>
+                </div>
+              </div>
+              <div class="status-bar" style="border-color: rgba(232,149,74,0.3);">
+                <span class="dot amber-pulse"></span>
+                <div class="label" style="color: var(--text-primary)">Time for a break</div>
+              </div>
+            </div>
+            <div class="tab-bar">
+              <div class="tab active"><svg viewBox="0 0 24 24"><path d="M3 12 12 3l9 9v9a2 2 0 0 1-2 2h-4v-7H10v7H6a2 2 0 0 1-2-2v-9z"/></svg>Home</div>
+              <div class="tab"><svg viewBox="0 0 24 24"><path d="M3 21V10m6 11V4m6 17v-7m6 7V8"/></svg>Insights</div>
+              <div class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Home — alerting</div>
+      <div class="phone-sub">Dot pulses, BreakView sheet auto-pops.<br>Dynamic Island gets amber halo too.</div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="screen">
+            <div class="screen-content">
+              <div class="settings-header">
+                <div class="eyebrow">Settings</div>
+                <h2>Preferences</h2>
+              </div>
+
+              <div class="section-h">Screen Time</div>
+              <div class="settings-card">
+                <div class="settings-row">
+                  <div class="left">
+                    <div class="name">System data</div>
+                    <div class="desc">Use real screen-time data from your device.</div>
+                  </div>
+                  <div class="connect-btn">CONNECT</div>
+                </div>
+              </div>
+
+              <div class="section-h">Reminder</div>
+              <div class="settings-card">
+                <div class="settings-row">
+                  <div class="left">
+                    <div class="name">Interval</div>
+                    <div class="desc">Fixed — 20 min</div>
+                  </div>
+                  <div class="value-mono">20 min</div>
+                </div>
+              </div>
+
+              <div class="section-h">Pro Features</div>
+              <div class="settings-card">
+                <div class="settings-row">
+                  <div class="left">
+                    <div class="name">DI Alert Size <span style="font-size:8px; color:var(--amber); background: rgba(232,149,74,0.15); padding:1px 4px; border-radius:3px; margin-left:4px;">PRO</span></div>
+                    <div class="desc">Dynamic Island expanded height</div>
+                  </div>
+                  <div class="value-mono">M</div>
+                </div>
+                <div class="settings-row">
+                  <div class="left">
+                    <div class="name">Haptic on alert <span style="font-size:8px; color:var(--amber); background: rgba(232,149,74,0.15); padding:1px 4px; border-radius:3px; margin-left:4px;">PRO</span></div>
+                    <div class="desc">Vibrate when reminder fires</div>
+                  </div>
+                  <div class="value-mono" style="opacity:0.5">○</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tab-bar">
+              <div class="tab"><svg viewBox="0 0 24 24"><path d="M3 12 12 3l9 9v9a2 2 0 0 1-2 2h-4v-7H10v7H6a2 2 0 0 1-2-2v-9z"/></svg>Home</div>
+              <div class="tab"><svg viewBox="0 0 24 24"><path d="M3 21V10m6 11V4m6 17v-7m6 7V8"/></svg>Insights</div>
+              <div class="tab active"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Settings — Connect Screen Time</div>
+      <div class="phone-sub">New section above Reminder.<br>Triggers Family Controls system sheet.</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="footer">
+  Eyescape v2 · branch claude/review-product-design-1lmOJ · 2026-05
+</div>
+
+</body>
+</html>
