@@ -10,7 +10,7 @@ struct SettingsView: View {
 
     var body: some View {
         ZStack {
-            Color(hex: "0C0C10").ignoresSafeArea()
+            Color.appBackground.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 Color.clear.frame(height: 60)
@@ -21,11 +21,11 @@ struct SettingsView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("SETTINGS")
                                 .font(.system(size: 11, weight: .medium, design: .monospaced))
-                                .foregroundColor(Color(hex: "E8954A"))
+                                .foregroundColor(Color.accentAmber)
                                 .tracking(1.2)
                             Text("Preferences")
                                 .font(.system(size: 28, weight: .semibold))
-                                .foregroundColor(Color(hex: "F2F2F5"))
+                                .foregroundColor(Color.textPrimary)
                         }
                         .padding(.bottom, 32)
 
@@ -70,20 +70,20 @@ struct SettingsView: View {
                     if screenTimeAuth.status == .approved {
                         Text("Connected")
                             .font(.system(size: 12, design: .monospaced))
-                            .foregroundColor(Color(hex: "E8954A"))
+                            .foregroundColor(Color.accentAmber)
                     } else {
                         Button {
                             Task { await screenTimeAuth.requestAuthorization() }
                         } label: {
                             Text("Connect")
                                 .font(.system(size: 12, weight: .medium, design: .monospaced))
-                                .foregroundColor(Color(hex: "E8954A"))
+                                .foregroundColor(Color.accentAmber)
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 5)
-                                .background(Color(hex: "E8954A").opacity(0.12))
+                                .background(Color.accentAmber.opacity(0.12))
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 6)
-                                        .stroke(Color(hex: "E8954A").opacity(0.4), lineWidth: 1)
+                                        .stroke(Color.accentAmber.opacity(0.4), lineWidth: 1)
                                 )
                                 .clipShape(RoundedRectangle(cornerRadius: 6))
                         }
@@ -116,11 +116,11 @@ struct SettingsView: View {
                     if settings.isPro {
                         Text("\(settings.customIntervalMinutes) min")
                             .font(.system(size: 13, design: .monospaced))
-                            .foregroundColor(Color(hex: "E8954A"))
+                            .foregroundColor(Color.accentAmber)
                     } else {
                         Text("20 min")
                             .font(.system(size: 13, design: .monospaced))
-                            .foregroundColor(Color(hex: "8A8A96"))
+                            .foregroundColor(Color.textSecondary)
                     }
                 }
             }
@@ -163,7 +163,7 @@ struct SettingsView: View {
                         get: { settings.hapticEnabled },
                         set: { settings.hapticEnabled = $0; try? modelContext.save() }
                     ))
-                    .tint(Color(hex: "E8954A"))
+                    .tint(Color.accentAmber)
                     .disabled(!settings.isPro)
                     .labelsHidden()
                 }
@@ -208,25 +208,25 @@ struct SettingsView: View {
     private var proUpsellBanner: some View {
         HStack(spacing: 12) {
             Circle()
-                .fill(Color(hex: "E8954A"))
+                .fill(Color.accentAmber)
                 .frame(width: 8, height: 8)
-                .shadow(color: Color(hex: "E8954A").opacity(0.7), radius: 4)
+                .shadow(color: Color.accentAmber.opacity(0.7), radius: 4)
             VStack(alignment: .leading, spacing: 2) {
                 Text("Unlock Eyescape Pro")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(Color(hex: "F2F2F5"))
+                    .foregroundColor(Color.textPrimary)
                 Text("DI size · Custom interval · Haptic control")
                     .font(.system(size: 11))
-                    .foregroundColor(Color(hex: "8A8A96"))
+                    .foregroundColor(Color.textSecondary)
             }
             Spacer()
             Text("↗")
                 .font(.system(size: 16))
-                .foregroundColor(Color(hex: "E8954A"))
+                .foregroundColor(Color.accentAmber)
         }
         .padding(14)
-        .background(Color(hex: "E8954A").opacity(0.08))
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(hex: "E8954A").opacity(0.2), lineWidth: 1))
+        .background(Color.accentAmber.opacity(0.08))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.accentAmber.opacity(0.2), lineWidth: 1))
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
@@ -239,13 +239,13 @@ struct SettingsView: View {
                 SettingsRow(label: "Version") {
                     Text("1.0.0")
                         .font(.system(size: 12, design: .monospaced))
-                        .foregroundColor(Color(hex: "8A8A96"))
+                        .foregroundColor(Color.textSecondary)
                 }
                 Divider().background(Color.white.opacity(0.07))
                 SettingsRow(label: "Device") {
                     Text("iPhone 14 Pro+")
                         .font(.system(size: 12, design: .monospaced))
-                        .foregroundColor(Color(hex: "8A8A96"))
+                        .foregroundColor(Color.textSecondary)
                 }
             }
         }
@@ -259,7 +259,7 @@ private struct SectionHeader: View {
     var body: some View {
         Text(title.uppercased())
             .font(.system(size: 10, weight: .medium, design: .monospaced))
-            .foregroundColor(Color(hex: "E8954A"))
+            .foregroundColor(Color.accentAmber)
             .tracking(1.2)
             .padding(.bottom, 8)
     }
@@ -270,7 +270,7 @@ private struct SettingsCard<Content: View>: View {
     var body: some View {
         VStack(spacing: 0) { content }
             .padding(.vertical, 4)
-            .background(Color(hex: "18181F"))
+            .background(Color.appSurface)
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.white.opacity(0.07), lineWidth: 1))
             .clipShape(RoundedRectangle(cornerRadius: 14))
     }
@@ -288,21 +288,21 @@ private struct SettingsRow<Trailing: View>: View {
                 HStack(spacing: 6) {
                     Text(label)
                         .font(.system(size: 14))
-                        .foregroundColor(locked ? Color(hex: "8A8A96") : Color(hex: "F2F2F5"))
+                        .foregroundColor(locked ? Color.textSecondary : Color.textPrimary)
                     if locked {
                         Text("PRO")
                             .font(.system(size: 8, weight: .bold, design: .monospaced))
-                            .foregroundColor(Color(hex: "E8954A"))
+                            .foregroundColor(Color.accentAmber)
                             .padding(.horizontal, 4)
                             .padding(.vertical, 1)
-                            .background(Color(hex: "E8954A").opacity(0.15))
+                            .background(Color.accentAmber.opacity(0.15))
                             .clipShape(RoundedRectangle(cornerRadius: 3))
                     }
                 }
                 if let subtitle {
                     Text(subtitle)
                         .font(.system(size: 11))
-                        .foregroundColor(Color(hex: "8A8A96").opacity(0.7))
+                        .foregroundColor(Color.textSecondary.opacity(0.7))
                 }
             }
             Spacer()
@@ -329,18 +329,18 @@ private struct PillGroup<T: Hashable>: View {
                 } label: {
                     Text(label(option))
                         .font(.system(size: 10, weight: .medium, design: .monospaced))
-                        .foregroundColor(isSelected(option) ? Color(hex: "E8954A") : Color(hex: "8A8A96"))
+                        .foregroundColor(isSelected(option) ? Color.accentAmber : Color.textSecondary)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                         .background(
                             isSelected(option)
-                                ? Color(hex: "E8954A").opacity(0.12)
-                                : Color(hex: "22222C")
+                                ? Color.accentAmber.opacity(0.12)
+                                : Color.appSurfaceElev
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 6)
                                 .stroke(
-                                    isSelected(option) ? Color(hex: "E8954A") : Color.white.opacity(0.07),
+                                    isSelected(option) ? Color.accentAmber : Color.white.opacity(0.07),
                                     lineWidth: 1
                                 )
                         )

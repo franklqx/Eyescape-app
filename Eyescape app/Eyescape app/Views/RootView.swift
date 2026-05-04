@@ -7,8 +7,9 @@ struct RootView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var selectedTab: Tab = .home
 
-    enum Tab {
-        case home, analytics, settings
+    enum Tab: String, CaseIterable, Identifiable {
+        case home, insights, settings
+        var id: String { rawValue }
     }
 
     var body: some View {
@@ -16,15 +17,17 @@ struct RootView: View {
             // Tab content
             Group {
                 switch selectedTab {
-                case .home:      HomeView()
-                case .analytics: AnalyticsView()
-                case .settings:  SettingsView()
+                case .home:     HomeView()
+                case .insights: InsightsView()
+                case .settings: SettingsView()
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            // Custom tab bar
-            customTabBar
+            // Floating Liquid Glass tab bar
+            LiquidGlassTabBar(selected: $selectedTab)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 16)
         }
         .ignoresSafeArea(edges: .bottom)
         .onAppear {
@@ -32,82 +35,79 @@ struct RootView: View {
             storeManager.configure(modelContext: modelContext)
         }
     }
-
-    // MARK: - Custom Tab Bar
-
-    private var customTabBar: some View {
-        HStack(spacing: 0) {
-            TabBarButton(
-                icon: "house",
-                iconSelected: "house.fill",
-                label: "Home",
-                isSelected: selectedTab == .home
-            ) { selectedTab = .home }
-
-            TabBarButton(
-                icon: "chart.bar",
-                iconSelected: "chart.bar.fill",
-                label: "Insights",
-                isSelected: selectedTab == .analytics
-            ) { selectedTab = .analytics }
-
-            TabBarButton(
-                icon: "gearshape",
-                iconSelected: "gearshape.fill",
-                label: "Settings",
-                isSelected: selectedTab == .settings
-            ) { selectedTab = .settings }
-        }
-        .padding(.horizontal, 8)
-        .padding(.top, 12)
-        .padding(.bottom, 28)     // safe area for home indicator
-        .background(
-            Rectangle()
-                .fill(Color(hex: "18181F"))
-                .overlay(
-                    Rectangle()
-                        .frame(height: 1)
-                        .foregroundColor(Color.white.opacity(0.07)),
-                    alignment: .top
-                )
-        )
-    }
 }
 
-// MARK: - TabBarButton
+// MARK: - LiquidGlassTabBar
 
-private struct TabBarButton: View {
-    let icon: String
-    let iconSelected: String
-    let label: String
-    let isSelected: Bool
-    let action: () -> Void
+struct LiquidGlassTabBar: View {
+    @Binding var selected: RootView.Tab
 
     var body: some View {
-        Button(action: action) {
-            VStack(spacing: 4) {
-                Image(systemName: isSelected ? iconSelected : icon)
-                    .font(.system(size: 20))
-                    .foregroundColor(isSelected ? Color(hex: "E8954A") : Color(hex: "8A8A96"))
+        HStack(spacing: 4) {
+            ForEach(RootView.Tab.allCases) { tab in
+                tabButton(tab)
+            }
+        }
+        .padding(6)
+        .frame(height: 64)
+        .frame(maxWidth: .infinity)
+        .liquidGlass(in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+    }
 
-                Text(label)
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(isSelected ? Color(hex: "E8954A") : Color(hex: "8A8A96"))
+    @ViewBuilder
+    private func tabButton(_ tab: RootView.Tab) -> some View {
+        let isActive = selected == tab
+        Button {
+            withAnimation(.snappy(duration: 0.18)) { selected = tab }
+        } label: {
+            VStack(spacing: 3) {
+                Image(systemName: iconName(for: tab, active: isActive))
+                    .font(.system(size: 19, weight: .medium))
+                Text(label(for: tab))
+                    .appText(.tabLabel)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 4)
+            .frame(height: 52)
+            .foregroundStyle(isActive ? Color.accentAmber : Color.textSecondary)
+            .background {
+                if isActive {
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .fill(Color.accentAmberSoft)
+                }
+            }
+            .contentShape(RoundedRectangle(cornerRadius: 22))
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(label(for: tab))
+        .accessibilityAddTraits(isActive ? .isSelected : [])
+    }
+
+    private func iconName(for tab: RootView.Tab, active: Bool) -> String {
+        switch tab {
+        case .home:     return active ? "house.fill"      : "house"
+        case .insights: return active ? "chart.bar.fill"  : "chart.bar"
+        case .settings: return active ? "gearshape.fill"  : "gearshape"
+        }
+    }
+
+    private func label(for tab: RootView.Tab) -> String {
+        switch tab {
+        case .home:     return "Home"
+        case .insights: return "Insights"
+        case .settings: return "Settings"
+        }
     }
 }
 
 #Preview {
-    let schema = Schema([Session.self, BreakRecord.self, UserSettings.self, PetState.self, EyeExerciseRecord.self])
+    let schema = Schema([
+        Session.self, BreakRecord.self, UserSettings.self,
+        PetState.self, EyeExerciseRecord.self, PickupSession.self,
+    ])
     let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: schema, configurations: config)
-    RootView()
+    return RootView()
         .environment(SessionManager())
         .environment(StoreManager())
-        .environment(ScreenTimeAuthManager())
         .modelContainer(container)
 }

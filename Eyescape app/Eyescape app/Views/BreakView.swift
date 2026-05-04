@@ -11,17 +11,17 @@ struct BreakView: View {
 
     var body: some View {
         ZStack {
-            Color(hex: "0C0C10").ignoresSafeArea()
+            Color.appBackground.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 Spacer()
 
                 // Breathing amber dot — scale 1.0→1.3 every 3s, mimics slow breath
                 Circle()
-                    .fill(Color(hex: "E8954A"))
+                    .fill(Color.accentAmber)
                     .frame(width: 48, height: 48)
-                    .shadow(color: Color(hex: "E8954A").opacity(0.6), radius: 20)
-                    .shadow(color: Color(hex: "E8954A").opacity(0.25), radius: 60)
+                    .shadow(color: Color.accentAmber.opacity(0.6), radius: 20)
+                    .shadow(color: Color.accentAmber.opacity(0.25), radius: 60)
                     .scaleEffect(pulseScale)
                     .onAppear {
                         withAnimation(
@@ -33,13 +33,14 @@ struct BreakView: View {
 
                 Text("Rest for 20 seconds")
                     .font(.system(size: 22, weight: .semibold))
-                    .foregroundColor(Color(hex: "F2F2F5"))
+                    .tracking(-0.5)
+                    .foregroundStyle(Color.textPrimary)
 
                 Spacer().frame(height: 8)
 
                 Text("Look at something 20 feet away.\nBlink slowly. Let your eyes relax.")
-                    .font(.system(size: 14))
-                    .foregroundColor(Color(hex: "8A8A96"))
+                    .appText(.body)
+                    .foregroundStyle(Color.textSecondary)
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
 
@@ -47,9 +48,8 @@ struct BreakView: View {
 
                 // Countdown — the ONLY place in the app where a timer number is visible
                 Text(String(format: "00:%02d", secondsLeft))
-                    .font(.system(size: 52, weight: .thin, design: .monospaced))
-                    .foregroundColor(Color(hex: "E8954A"))
-                    .monospacedDigit()
+                    .appText(.countdown)
+                    .foregroundStyle(Color.accentAmber)
                     .contentTransition(.numericText(countsDown: true))
                     .animation(.default, value: secondsLeft)
                     .accessibilityLabel("\(secondsLeft) seconds remaining")
@@ -59,19 +59,19 @@ struct BreakView: View {
                 Button { confirm() } label: {
                     Text(secondsLeft > 0 ? "Done early" : "Done")
                         .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(Color(hex: "0C0C10"))
+                        .tracking(-0.3)
+                        .foregroundStyle(Color.appBackground)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
-                        .background(Color(hex: "E8954A"))
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .background(Color.accentAmber, in: RoundedRectangle(cornerRadius: 16))
                 }
 
                 Spacer().frame(height: 12)
 
                 Button { skip() } label: {
                     Text("Skip this break")
-                        .font(.system(size: 14))
-                        .foregroundColor(Color(hex: "8A8A96"))
+                        .appText(.body)
+                        .foregroundStyle(Color.textSecondary)
                         .frame(minHeight: 44)
                 }
 
@@ -79,10 +79,7 @@ struct BreakView: View {
             }
             .padding(.horizontal, 28)
         }
-        // Swift Concurrency timer — no Combine dependency
-        .task {
-            await runCountdown()
-        }
+        .task { await runCountdown() }
     }
 
     // MARK: - Timer
@@ -93,7 +90,6 @@ struct BreakView: View {
             guard timerActive else { return }
             secondsLeft -= 1
         }
-        // Auto-complete when countdown hits zero
         if timerActive {
             confirm()
         }

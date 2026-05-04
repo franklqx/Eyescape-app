@@ -10,7 +10,7 @@ struct PaywallView: View {
 
     var body: some View {
         ZStack {
-            Color(hex: "0C0C10").ignoresSafeArea()
+            Color.appBackground.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 // Close button
@@ -19,9 +19,9 @@ struct PaywallView: View {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(Color(hex: "8A8A96"))
+                            .foregroundColor(Color.textSecondary)
                             .frame(width: 44, height: 44)
-                            .background(Color(hex: "18181F"))
+                            .background(Color.appSurface)
                             .clipShape(Circle())
                     }
                     .accessibilityLabel("Close")
@@ -62,11 +62,11 @@ struct PaywallView: View {
 
             Text("Eyescape Pro")
                 .font(.system(size: 28, weight: .bold))
-                .foregroundColor(Color(hex: "F2F2F5"))
+                .foregroundColor(Color.textPrimary)
 
             Text("Everything your eyes deserve.")
                 .font(.system(size: 15))
-                .foregroundColor(Color(hex: "8A8A96"))
+                .foregroundColor(Color.textSecondary)
                 .multilineTextAlignment(.center)
         }
     }
@@ -105,29 +105,29 @@ struct PaywallView: View {
             // Price display
             if storeManager.isLoadingProducts {
                 ProgressView()
-                    .tint(Color(hex: "E8954A"))
+                    .tint(Color.accentAmber)
                     .frame(height: 22)
             } else if let product = storeManager.product {
                 VStack(spacing: 2) {
                     Text(product.displayPrice)
                         .font(.system(size: 34, weight: .bold, design: .rounded))
-                        .foregroundColor(Color(hex: "F2F2F5"))
+                        .foregroundColor(Color.textPrimary)
                     Text("one-time purchase · no subscription")
                         .font(.system(size: 12))
-                        .foregroundColor(Color(hex: "8A8A96"))
+                        .foregroundColor(Color.textSecondary)
                 }
             } else {
                 // Product failed to load — show retry
                 VStack(spacing: 6) {
                     Text("Couldn't load price")
                         .font(.system(size: 13))
-                        .foregroundColor(Color(hex: "8A8A96"))
+                        .foregroundColor(Color.textSecondary)
                     Button {
                         Task { await storeManager.loadProducts() }
                     } label: {
                         Text("Retry")
                             .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(Color(hex: "E8954A"))
+                            .foregroundColor(Color.accentAmber)
                     }
                 }
                 .frame(height: 22)
@@ -137,7 +137,7 @@ struct PaywallView: View {
             if case .failed(let message) = storeManager.purchaseState {
                 Text(message)
                     .font(.system(size: 12))
-                    .foregroundColor(Color(hex: "E05454"))
+                    .foregroundColor(Color.appError)
                     .multilineTextAlignment(.center)
             }
 
@@ -148,19 +148,19 @@ struct PaywallView: View {
                 ZStack {
                     if case .loading = storeManager.purchaseState {
                         ProgressView()
-                            .tint(Color(hex: "0C0C10"))
+                            .tint(Color.appBackground)
                     } else {
                         Text(storeManager.product == nil ? "Loading…" : "Get Eyescape Pro")
                             .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(Color(hex: "0C0C10"))
+                            .foregroundColor(Color.appBackground)
                     }
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 17)
                 .background(
                     storeManager.product == nil
-                        ? Color(hex: "E8954A").opacity(0.4)
-                        : Color(hex: "E8954A")
+                        ? Color.accentAmber.opacity(0.4)
+                        : Color.accentAmber
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 16))
             }
@@ -172,7 +172,7 @@ struct PaywallView: View {
             } label: {
                 Text("Restore purchases")
                     .font(.system(size: 13))
-                    .foregroundColor(Color(hex: "8A8A96"))
+                    .foregroundColor(Color.textSecondary)
                     .underline()
             }
             .disabled(storeManager.purchaseState == .loading)
@@ -184,7 +184,7 @@ struct PaywallView: View {
     private var legalSection: some View {
         Text("Payment is charged to your Apple ID account at confirmation. This is a one-time purchase with no recurring charges.")
             .font(.system(size: 10))
-            .foregroundColor(Color(hex: "8A8A96").opacity(0.6))
+            .foregroundColor(Color.textSecondary.opacity(0.6))
             .multilineTextAlignment(.center)
     }
 }
@@ -200,27 +200,27 @@ private struct FeatureRow: View {
         HStack(alignment: .top, spacing: 14) {
             ZStack {
                 RoundedRectangle(cornerRadius: 10)
-                    .fill(Color(hex: "E8954A").opacity(0.12))
+                    .fill(Color.accentAmber.opacity(0.12))
                     .frame(width: 38, height: 38)
                 Image(systemName: icon)
                     .font(.system(size: 16))
-                    .foregroundColor(Color(hex: "E8954A"))
+                    .foregroundColor(Color.accentAmber)
             }
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(Color(hex: "F2F2F5"))
+                    .foregroundColor(Color.textPrimary)
                 Text(subtitle)
                     .font(.system(size: 12))
-                    .foregroundColor(Color(hex: "8A8A96"))
+                    .foregroundColor(Color.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
             Spacer()
         }
         .padding(14)
-        .background(Color(hex: "18181F"))
+        .background(Color.appSurface)
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.white.opacity(0.07), lineWidth: 1))
         .clipShape(RoundedRectangle(cornerRadius: 14))
     }
@@ -237,14 +237,14 @@ struct AmberGlowLogo: View {
         ZStack {
             // Dark amber-tinted background
             RoundedRectangle(cornerRadius: size * 0.25)
-                .fill(Color(hex: "E8954A").opacity(0.12))
+                .fill(Color.accentAmber.opacity(0.12))
 
             // Focal dot — solid amber, 35% of container, with double glow
             Circle()
-                .fill(Color(hex: "E8954A"))
+                .fill(Color.accentAmber)
                 .frame(width: size * 0.35, height: size * 0.35)
-                .shadow(color: Color(hex: "E8954A"), radius: size * 0.08)
-                .shadow(color: Color(hex: "E8954A").opacity(0.4), radius: size * 0.22)
+                .shadow(color: Color.accentAmber, radius: size * 0.08)
+                .shadow(color: Color.accentAmber.opacity(0.4), radius: size * 0.22)
         }
         .frame(width: size, height: size)
     }

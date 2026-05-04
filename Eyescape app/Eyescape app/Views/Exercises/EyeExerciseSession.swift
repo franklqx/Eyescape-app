@@ -29,7 +29,7 @@ struct EyeExerciseSession: View {
 
     var body: some View {
         ZStack {
-            Color(hex: "0C0C10").ignoresSafeArea()
+            Color.appBackground.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 topBar
@@ -41,14 +41,15 @@ struct EyeExerciseSession: View {
                 Spacer().frame(height: 24)
 
                 Text(currentStep.name)
-                    .font(.system(size: 22, weight: .semibold))
-                    .foregroundColor(Color(hex: "F2F2F5"))
+                    .font(.system(size: 24, weight: .semibold))
+                    .tracking(-0.5)
+                    .foregroundStyle(Color.textPrimary)
 
                 Spacer().frame(height: 8)
 
                 Text(currentStep.instruction)
-                    .font(.system(size: 14))
-                    .foregroundColor(Color(hex: "8A8A96"))
+                    .appText(.body)
+                    .foregroundStyle(Color.textSecondary)
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
                     .padding(.horizontal, 32)
@@ -56,9 +57,8 @@ struct EyeExerciseSession: View {
                 Spacer().frame(height: 40)
 
                 Text(String(format: "00:%02d", secondsLeft))
-                    .font(.system(size: 52, weight: .thin, design: .monospaced))
-                    .foregroundColor(Color(hex: "E8954A"))
-                    .monospacedDigit()
+                    .appText(.countdown)
+                    .foregroundStyle(Color.accentAmber)
                     .contentTransition(.numericText(countsDown: true))
                     .animation(.default, value: secondsLeft)
                     .accessibilityLabel("\(secondsLeft) seconds remaining")
@@ -67,8 +67,8 @@ struct EyeExerciseSession: View {
 
                 Button { skipCurrentStep() } label: {
                     Text(stepIndex < exercise.steps.count - 1 ? "Skip step" : "Finish")
-                        .font(.system(size: 14))
-                        .foregroundColor(Color(hex: "8A8A96"))
+                        .appText(.body)
+                        .foregroundStyle(Color.textSecondary)
                         .frame(minHeight: 44)
                 }
 
@@ -91,42 +91,45 @@ struct EyeExerciseSession: View {
         HStack {
             Button { abort() } label: {
                 Image(systemName: "xmark")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(Color(hex: "8A8A96"))
-                    .frame(width: 44, height: 44)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color.textSecondary)
+                    .frame(width: 36, height: 36)
+                    .background(Color.appSurface, in: Circle())
+                    .overlay { Circle().stroke(Color.hairline, lineWidth: 1) }
             }
+            .buttonStyle(.plain)
 
             Spacer()
 
-            VStack(spacing: 4) {
-                Text(exercise.displayName.uppercased())
-                    .font(.system(size: 11, weight: .medium, design: .monospaced))
-                    .foregroundColor(Color(hex: "E8954A"))
-                    .tracking(1.2)
+            VStack(spacing: 6) {
+                Text(exercise.displayName)
+                    .font(.system(size: 12, weight: .semibold))
+                    .tracking(-0.2)
+                    .foregroundStyle(Color.textPrimary)
                 ProgressView(value: totalElapsedFraction)
-                    .tint(Color(hex: "E8954A"))
+                    .tint(Color.accentAmber)
                     .frame(width: 140)
             }
 
             Spacer()
 
-            // Symmetric placeholder for layout balance.
-            Color.clear.frame(width: 44, height: 44)
+            Color.clear.frame(width: 36, height: 36)
         }
         .padding(.top, 8)
+        .padding(.horizontal, 22)
     }
 
     private var pulseDot: some View {
         Circle()
-            .fill(Color(hex: "E8954A"))
-            .frame(width: 48, height: 48)
-            .shadow(color: Color(hex: "E8954A").opacity(0.6), radius: 20)
-            .shadow(color: Color(hex: "E8954A").opacity(0.25), radius: 60)
+            .fill(Color.accentAmber)
+            .frame(width: 56, height: 56)
+            .shadow(color: Color.accentAmber.opacity(0.6), radius: 22)
+            .shadow(color: Color.accentAmber.opacity(0.25), radius: 60)
             .scaleEffect(pulseScale)
             .overlay(
                 Image(systemName: currentStep.symbolName)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(Color(hex: "0C0C10"))
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundStyle(Color.appBackground)
             )
     }
 
