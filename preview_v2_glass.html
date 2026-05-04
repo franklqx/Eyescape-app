@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eyescape v2 — Warm + Liquid Glass</title>
+<style>
+/* ─── Tokens ─── */
+:root {
+  --bg: #FAF6ED;
+  --bg-grad: linear-gradient(180deg, #FAF6ED 0%, #F4EAD5 100%);
+  --surface: #FFFFFF;
+  --surface-soft: rgba(255,255,255,0.6);
+  --surface-elev: #F1E9D8;
+  --text-primary: #1F1815;
+  --text-secondary: #837569;
+  --text-tertiary: #B5A99B;
+  --amber: #C5631E;
+  --amber-soft: rgba(197,99,30,0.10);
+  --amber-border: rgba(197,99,30,0.22);
+  --sage: #5F7E4F;
+  --sage-soft: rgba(95,126,79,0.10);
+  --sage-border: rgba(95,126,79,0.24);
+  --hairline: rgba(31,24,21,0.06);
+  --frame: #d8c9b3;
+  --tab-bar-bg: rgba(255,255,255,0.55);
+  --tab-bar-border: rgba(255,255,255,0.45);
+  --tab-bar-shadow: 0 16px 40px rgba(31,24,21,0.10);
+  --tab-bar-saturation: 1.8;
+  --tab-bar-brightness: 1.12;
+  --shadow-card: 0 1px 2px rgba(31,24,21,0.04), 0 8px 24px rgba(31,24,21,0.05);
+  --page-bg: #ECE3D2;
+  --orb-color: rgba(197,99,30,0.18);
+}
+
+[data-theme="dark"] {
+  --bg: #16110D;
+  --bg-grad: radial-gradient(120% 80% at 70% 0%, #2B2017 0%, #16110D 60%);
+  --surface: #1F1812;
+  --surface-soft: rgba(43,35,27,0.55);
+  --surface-elev: #2B231B;
+  --text-primary: #F4ECDF;
+  --text-secondary: #998875;
+  --text-tertiary: #5e5246;
+  --amber: #E89B6A;
+  --amber-soft: rgba(232,155,106,0.13);
+  --amber-border: rgba(232,155,106,0.28);
+  --sage: #A8C58B;
+  --sage-soft: rgba(168,197,139,0.13);
+  --sage-border: rgba(168,197,139,0.30);
+  --hairline: rgba(244,236,223,0.07);
+  --frame: #2a201a;
+  --tab-bar-bg: rgba(43,35,27,0.55);
+  --tab-bar-border: rgba(255,255,255,0.10);
+  --tab-bar-shadow: 0 16px 40px rgba(0,0,0,0.5);
+  --tab-bar-saturation: 1.6;
+  --tab-bar-brightness: 0.95;
+  --shadow-card: 0 1px 2px rgba(0,0,0,0.5), 0 8px 24px rgba(0,0,0,0.35);
+  --page-bg: #0F0B08;
+  --orb-color: rgba(232,155,106,0.18);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'PingFang SC', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "ss01", "cv11", "tnum";
+  background: var(--page-bg);
+  color: var(--text-primary);
+  transition: background 250ms ease, color 250ms ease;
+}
+
+body {
+  padding: 56px 24px 120px;
+  display: flex; flex-direction: column; align-items: center; gap: 56px;
+}
+
+/* ─── Theme toggle ─── */
+.theme-switch {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 100;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 100px;
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-card);
+}
+.theme-switch button {
+  appearance: none; border: none; background: transparent;
+  color: var(--text-secondary); font: inherit;
+  font-size: 12px; font-weight: 500;
+  padding: 7px 16px; border-radius: 100px; cursor: pointer;
+  letter-spacing: -0.1px;
+}
+.theme-switch button.active {
+  background: var(--text-primary); color: var(--bg);
+}
+
+/* ─── Page ─── */
+.page-header {
+  text-align: center; max-width: 720px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.page-header .eyebrow {
+  font-size: 10px; font-weight: 600; letter-spacing: 1.6px;
+  text-transform: uppercase; color: var(--amber);
+}
+.page-header h1 {
+  font-size: 34px; font-weight: 600; letter-spacing: -0.6px; line-height: 1.15;
+}
+.page-header p {
+  font-size: 14px; color: var(--text-secondary); line-height: 1.6;
+}
+
+.section { display: flex; flex-direction: column; align-items: center; gap: 28px; }
+.section-label {
+  font-size: 11px; font-weight: 600; letter-spacing: 1.2px;
+  text-transform: uppercase; color: var(--text-secondary);
+}
+.section-caption {
+  font-size: 13px; color: var(--text-secondary); text-align: center;
+  max-width: 600px; line-height: 1.6; margin-top: -12px;
+}
+.phones-row {
+  display: flex; gap: 28px; flex-wrap: wrap; justify-content: center; align-items: flex-start;
+}
+
+/* ─── iPhone frame ─── */
+.phone {
+  width: 320px; height: 692px;
+  background: var(--bg);
+  background-image: var(--bg-grad);
+  border-radius: 48px;
+  border: 9px solid var(--frame);
+  box-shadow: 0 30px 60px rgba(31,24,21,0.18);
+  position: relative; overflow: hidden;
+  transition: background 250ms ease, border-color 250ms ease;
+}
+[data-theme="dark"] .phone { box-shadow: 0 30px 60px rgba(0,0,0,0.55); }
+.phone::before {
+  content: ''; position: absolute; top: 11px; left: 50%;
+  transform: translateX(-50%);
+  width: 100px; height: 28px; background: #000;
+  border-radius: 20px; z-index: 10;
+}
+.phone-screen {
+  width: 100%; height: 100%; padding: 50px 0 0 0;
+  position: relative; display: flex; flex-direction: column;
+}
+.phone-label {
+  margin-top: 16px; font-size: 12px; font-weight: 600;
+  color: var(--text-primary); text-align: center;
+  letter-spacing: -0.1px;
+}
+.phone-sub {
+  margin-top: 4px; font-size: 11px; color: var(--text-secondary);
+  text-align: center; line-height: 1.5; max-width: 320px;
+}
+
+/* Decorative warm orb behind content (gives Liquid Glass something to refract) */
+.bg-orb {
+  position: absolute;
+  width: 240px; height: 240px;
+  border-radius: 50%;
+  background: var(--orb-color);
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+}
+.bg-orb.tl { top: 20px; left: -60px; }
+.bg-orb.br { bottom: 80px; right: -80px; opacity: 0.7; }
+
+/* ─── Screen body ─── */
+.screen { flex: 1; overflow: hidden; display: flex; flex-direction: column; position: relative; z-index: 1; }
+.screen-content { flex: 1; padding: 24px 22px 100px; overflow: hidden; position: relative; z-index: 1; }
+
+/* ─── HEADER (top greeting) ─── */
+.header-block {
+  display: flex; flex-direction: column; gap: 4px;
+  margin-bottom: 28px;
+}
+.header-block .date {
+  font-size: 12px; font-weight: 500; color: var(--text-secondary);
+  letter-spacing: -0.1px;
+}
+.header-block h1 {
+  font-size: 28px; font-weight: 600; letter-spacing: -0.6px; line-height: 1.1;
+}
+
+/* ─── HERO ─── */
+.hero {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 32px;
+  gap: 18px;
+}
+.hero-left {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.hero-eyebrow {
+  font-size: 11px; font-weight: 500; color: var(--text-secondary);
+  letter-spacing: -0.1px;
+}
+.hero-value {
+  font-size: 48px; font-weight: 600; letter-spacing: -1.5px;
+  line-height: 1; color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  display: flex; align-items: baseline; gap: 6px;
+}
+.hero-value .unit {
+  font-size: 22px; font-weight: 500; color: var(--text-secondary);
+  letter-spacing: -0.6px;
+}
+.hero-delta {
+  font-size: 12px; color: var(--text-secondary);
+  margin-top: 4px; letter-spacing: -0.1px;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.hero-delta.good { color: var(--sage); }
+.hero-delta svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+
+/* Ring */
+.hero-ring {
+  width: 76px; height: 76px;
+  position: relative;
+  flex-shrink: 0;
+}
+.hero-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.hero-ring .ring-bg { stroke: var(--hairline); }
+.hero-ring .ring-fg { stroke: var(--amber); stroke-linecap: round; }
+.hero-ring .ring-label {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 600; color: var(--text-primary);
+  font-variant-numeric: tabular-nums; letter-spacing: -0.4px;
+}
+
+/* ─── Sub stats row (no card, inline) ─── */
+.sub-stats {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin-bottom: 36px;
+  padding: 16px 4px;
+}
+.sub-stats > div {
+  flex: 1;
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 0 12px;
+}
+.sub-stats > div + div {
+  border-left: 1px solid var(--hairline);
+}
+.sub-stats .v {
+  font-size: 18px; font-weight: 600; letter-spacing: -0.4px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.sub-stats .v.sage { color: var(--sage); }
+.sub-stats .v.amber { color: var(--amber); }
+.sub-stats .l {
+  font-size: 10px; color: var(--text-secondary);
+  letter-spacing: -0.1px;
+  font-weight: 500;
+}
+
+/* ─── Recommendation block ─── */
+.rec-eyebrow {
+  font-size: 11px; font-weight: 600; letter-spacing: -0.1px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.rec-eyebrow .more {
+  font-size: 11px; font-weight: 500; color: var(--amber);
+}
+
+.rec-card {
+  background: var(--surface);
+  border-radius: 22px;
+  padding: 18px 18px 16px;
+  margin-bottom: 12px;
+  display: flex; gap: 16px;
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--hairline);
+}
+.rec-glyph {
+  width: 56px; height: 56px;
+  flex-shrink: 0;
+  border-radius: 18px;
+  background: var(--amber-soft);
+  color: var(--amber);
+  display: flex; align-items: center; justify-content: center;
+}
+.rec-glyph svg { width: 26px; height: 26px; }
+.rec-meta { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.rec-meta .duration {
+  font-size: 11px; font-weight: 500; color: var(--amber);
+  letter-spacing: -0.1px;
+}
+.rec-meta .title {
+  font-size: 17px; font-weight: 600; letter-spacing: -0.3px;
+  line-height: 1.2;
+  margin-top: 1px;
+}
+.rec-meta .sub {
+  font-size: 12px; color: var(--text-secondary);
+  margin-top: 4px;
+  line-height: 1.45;
+  letter-spacing: -0.1px;
+}
+.rec-meta .start {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12px; font-weight: 600; color: var(--amber);
+  margin-top: 8px;
+  letter-spacing: -0.1px;
+}
+.rec-meta .start svg { width: 12px; height: 12px; }
+
+/* Other exercises row list */
+.other-exercises {
+  display: flex; flex-direction: column;
+}
+.exercise-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 4px;
+}
+.exercise-row + .exercise-row { border-top: 1px solid var(--hairline); }
+.exercise-row .duration {
+  font-size: 13px; font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  width: 44px; text-align: left;
+  letter-spacing: -0.2px;
+}
+.exercise-row .name {
+  font-size: 14px; color: var(--text-primary);
+  letter-spacing: -0.2px;
+  flex: 1;
+}
+.exercise-row .arrow {
+  color: var(--text-tertiary);
+  font-size: 14px;
+}
+
+/* ─── Liquid Glass tab bar ─── */
+.tab-bar {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  height: 64px;
+  border-radius: 28px;
+  display: flex;
+  align-items: center;
+  padding: 0 6px;
+  z-index: 10;
+
+  background: var(--tab-bar-bg);
+  -webkit-backdrop-filter: blur(24px) saturate(var(--tab-bar-saturation)) brightness(var(--tab-bar-brightness));
+  backdrop-filter: blur(24px) saturate(var(--tab-bar-saturation)) brightness(var(--tab-bar-brightness));
+  border: 1px solid var(--tab-bar-border);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.55),
+    inset 0 -1px 0 rgba(0,0,0,0.04),
+    var(--tab-bar-shadow);
+}
+[data-theme="dark"] .tab-bar {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.10),
+    inset 0 -1px 0 rgba(0,0,0,0.20),
+    var(--tab-bar-shadow);
+}
+.tab-bar .tab {
+  flex: 1;
+  height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border-radius: 22px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: -0.1px;
+  transition: background 180ms ease, color 180ms ease;
+}
+.tab-bar .tab svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.tab-bar .tab.active {
+  color: var(--amber);
+  background: var(--amber-soft);
+}
+.tab-bar .tab.active svg { fill: currentColor; stroke: currentColor; }
+
+/* Bottom safe area indicator inside tab bar */
+.tab-bar::after {
+  content: '';
+  position: absolute;
+  bottom: 8px; left: 50%;
+  transform: translateX(-50%);
+  width: 100px; height: 4px;
+  background: var(--text-primary);
+  opacity: 0.18;
+  border-radius: 100px;
+  display: none; /* tab bar already has its own home indicator clearance below */
+}
+
+/* ─── Floating session pill (just above tab bar) ─── */
+.session-pill {
+  position: absolute;
+  bottom: 96px;
+  left: 24px;
+  right: 24px;
+  height: 44px;
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 16px;
+  border-radius: 22px;
+  z-index: 5;
+
+  background: var(--tab-bar-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(var(--tab-bar-saturation));
+  backdrop-filter: blur(20px) saturate(var(--tab-bar-saturation));
+  border: 1px solid var(--tab-bar-border);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.5),
+    0 8px 24px rgba(31,24,21,0.08);
+}
+[data-theme="dark"] .session-pill {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 8px 24px rgba(0,0,0,0.4);
+}
+.session-pill .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  flex-shrink: 0;
+}
+.session-pill .dot.amber { background: var(--amber); box-shadow: 0 0 8px var(--amber-border); }
+.session-pill .dot.amber-dim { background: var(--amber); opacity: 0.35; }
+.session-pill .dot.amber-pulse {
+  background: var(--amber);
+  animation: amberPulse 1.5s ease-in-out infinite;
+}
+@keyframes amberPulse {
+  0%, 100% { box-shadow: 0 0 8px var(--amber); }
+  50%      { box-shadow: 0 0 14px var(--amber), 0 0 24px var(--amber-border); }
+}
+.session-pill .label {
+  font-size: 13px; color: var(--text-primary);
+  flex: 1;
+  letter-spacing: -0.2px;
+  font-weight: 500;
+}
+.session-pill .label.dim { color: var(--text-secondary); font-weight: 400; }
+.session-pill .action {
+  font-size: 12px; font-weight: 600;
+  color: var(--amber);
+  letter-spacing: -0.1px;
+}
+
+/* ─── Exercise full-screen ─── */
+.exercise-screen {
+  display: flex; flex-direction: column;
+  padding: 30px 0 0;
+  position: relative; z-index: 1;
+}
+.ex-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 22px 28px;
+}
+.ex-topbar .x {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-secondary);
+  font-size: 16px;
+  border-radius: 100px;
+  background: var(--surface-soft);
+  border: 1px solid var(--hairline);
+  backdrop-filter: blur(12px);
+}
+.ex-topbar .center {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.ex-topbar .center .crumb {
+  font-size: 12px; font-weight: 600;
+  letter-spacing: -0.2px; color: var(--text-primary);
+}
+.progress {
+  width: 130px; height: 4px;
+  background: var(--hairline);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.progress > span {
+  display: block; height: 100%;
+  background: var(--amber);
+  border-radius: 100px;
+}
+.ex-content {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 0 32px;
+  gap: 24px;
+}
+.pulse-dot {
+  width: 72px; height: 72px;
+  background: var(--amber);
+  border-radius: 50%;
+  position: relative;
+  box-shadow:
+    0 0 32px var(--amber-border),
+    0 0 80px var(--amber-soft);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--bg);
+  animation: breath 3s ease-in-out infinite;
+}
+@keyframes breath {
+  0%, 100% { transform: scale(1.0); }
+  50%      { transform: scale(1.3); }
+}
+.pulse-dot svg { width: 30px; height: 30px; }
+.ex-content .step-name {
+  font-size: 26px; font-weight: 600;
+  letter-spacing: -0.6px; text-align: center;
+}
+.ex-content .step-instruction {
+  font-size: 14px; color: var(--text-secondary);
+  text-align: center; line-height: 1.55;
+  letter-spacing: -0.1px;
+}
+.ex-content .countdown {
+  font-size: 64px; font-weight: 200;
+  color: var(--amber);
+  letter-spacing: -2.5px; margin-top: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.ex-skip {
+  text-align: center; font-size: 14px;
+  color: var(--text-secondary);
+  padding: 30px 0 36px;
+  letter-spacing: -0.1px;
+}
+
+/* ─── Insights ─── */
+.insights-header {
+  margin-bottom: 28px;
+}
+.insights-header .crumb {
+  font-size: 12px; font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: -0.1px;
+}
+.insights-header h1 {
+  font-size: 28px; font-weight: 600;
+  letter-spacing: -0.6px; line-height: 1.1;
+  margin-top: 4px;
+}
+.range-tabs {
+  display: flex;
+  gap: 4px;
+  margin-top: 16px;
+  padding: 4px;
+  background: var(--surface-elev);
+  border-radius: 100px;
+  width: fit-content;
+}
+.range-tabs button {
+  appearance: none; border: none; background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px; font-weight: 500;
+  padding: 6px 14px; border-radius: 100px;
+  cursor: pointer; font: inherit;
+  letter-spacing: -0.1px;
+}
+.range-tabs button.active {
+  background: var(--surface);
+  color: var(--text-primary);
+  box-shadow: 0 1px 2px rgba(31,24,21,0.06);
+}
+
+.insights-stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  padding: 8px 4px;
+  margin-bottom: 32px;
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+}
+.insights-stats-row > div {
+  padding: 14px 12px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.insights-stats-row > div + div {
+  border-left: 1px solid var(--hairline);
+}
+.insights-stats-row .v {
+  font-size: 22px; font-weight: 600;
+  letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.insights-stats-row .v.amber { color: var(--amber); }
+.insights-stats-row .v.sage { color: var(--sage); }
+.insights-stats-row .l {
+  font-size: 10px;
+  color: var(--text-secondary);
+  letter-spacing: -0.1px;
+}
+
+.weekly-trend {
+  margin-bottom: 28px;
+}
+.weekly-trend .label {
+  font-size: 11px; font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: -0.1px;
+  margin-bottom: 18px;
+  display: flex; justify-content: space-between;
+}
+.weekly-trend .label .max-tag {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.bars {
+  display: flex; gap: 8px; height: 88px;
+  align-items: flex-end;
+}
+.bar-col {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 8px;
+  height: 100%;
+  justify-content: flex-end;
+}
+.bar {
+  width: 100%;
+  background: var(--surface-elev);
+  border-radius: 6px;
+}
+.bar.high { background: var(--amber); opacity: 0.5; }
+.bar.today { background: var(--amber); }
+.bar-col .day {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  letter-spacing: -0.1px;
+}
+.bar-col.today .day { color: var(--amber); font-weight: 600; }
+
+.insight {
+  padding: 16px 0;
+}
+.insight + .insight { border-top: 1px solid var(--hairline); }
+.insight .ttl {
+  font-size: 14px; font-weight: 600;
+  letter-spacing: -0.2px;
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 6px;
+}
+.insight .ttl::before {
+  content: ''; width: 6px; height: 6px;
+  border-radius: 50%; background: var(--sage);
+}
+.insight.warn .ttl::before { background: var(--amber); }
+.insight p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  letter-spacing: -0.1px;
+}
+
+/* ─── Settings ─── */
+.settings-header {
+  margin-bottom: 28px;
+}
+.settings-header .crumb {
+  font-size: 12px; font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: -0.1px;
+}
+.settings-header h1 {
+  font-size: 28px; font-weight: 600;
+  letter-spacing: -0.6px;
+  margin-top: 4px;
+}
+.s-section { margin-bottom: 32px; }
+.s-section-h {
+  font-size: 11px; font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0 4px 10px;
+  letter-spacing: -0.1px;
+}
+.s-card {
+  background: var(--surface);
+  border-radius: 18px;
+  border: 1px solid var(--hairline);
+  padding: 4px 0;
+  box-shadow: var(--shadow-card);
+}
+.s-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+}
+.s-row + .s-row { border-top: 1px solid var(--hairline); }
+.s-row .name { font-size: 14px; letter-spacing: -0.2px; }
+.s-row .desc {
+  font-size: 11px; color: var(--text-secondary);
+  margin-top: 3px; line-height: 1.4;
+  letter-spacing: -0.1px;
+}
+.connect-btn {
+  font-size: 12px; font-weight: 600;
+  color: white;
+  padding: 7px 14px;
+  background: var(--amber);
+  border-radius: 100px;
+  letter-spacing: -0.1px;
+}
+.value-tail {
+  font-size: 12px; color: var(--text-secondary);
+  letter-spacing: -0.1px;
+  font-variant-numeric: tabular-nums;
+}
+.value-tail.amber { color: var(--amber); font-weight: 500; }
+.tag-pro {
+  font-size: 9px; font-weight: 700;
+  color: var(--amber);
+  background: var(--amber-soft);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  letter-spacing: 0.4px;
+}
+
+/* DI alerting glow */
+.phone.alerting::before {
+  box-shadow: 0 0 20px var(--amber);
+}
+
+/* Diff/note callouts */
+.notes {
+  max-width: 700px; width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 20px;
+  padding: 24px 28px;
+  box-shadow: var(--shadow-card);
+}
+.notes h3 {
+  font-size: 13px; font-weight: 600;
+  color: var(--amber);
+  margin-bottom: 12px;
+  letter-spacing: -0.1px;
+}
+.notes ul { list-style: none; }
+.notes li {
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 6px 0 6px 18px;
+  position: relative;
+  line-height: 1.55;
+  letter-spacing: -0.1px;
+}
+.notes li::before {
+  content: '·';
+  position: absolute; left: 0;
+  font-weight: 700;
+  color: var(--amber);
+}
+.notes li b {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.footer {
+  margin-top: 32px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+</style>
+</head>
+<body data-theme="dark">
+
+<div class="theme-switch">
+  <button id="btn-light">Light</button>
+  <button id="btn-dark" class="active">Dark</button>
+</div>
+
+<div class="page-header">
+  <div class="eyebrow">Eyescape v2 · Warm + Liquid Glass v0.2</div>
+  <h1>One hero, three breaths, glass at the bottom.</h1>
+  <p>新层级:1 个 hero(今日总时长)→ 3 个 inline 小指标 → 1 个上下文推荐 → 玻璃浮岛 tab bar。圆角更大,卡片更少,呼吸更多。</p>
+</div>
+
+<!-- ═══════════ HOME (active) ═══════════ -->
+<div class="section">
+  <div class="section-label">Home — auto-protect</div>
+  <div class="section-caption">最大变化:一个超大 hero 数字 + 三个 inline 小指标 + 一张上下文化推荐卡。底部 Liquid Glass 玻璃浮岛 tab bar(注意它会折射后面的暖色光晕)。</div>
+
+  <div class="phones-row">
+
+    <div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="bg-orb tl"></div>
+          <div class="bg-orb br"></div>
+          <div class="screen">
+            <div class="screen-content">
+              <div class="header-block">
+                <div class="date">Sunday, May 4</div>
+                <h1>Good afternoon.</h1>
+              </div>
+
+              <div class="hero">
+                <div class="hero-left">
+                  <div class="hero-eyebrow">Today's screen time</div>
+                  <div class="hero-value">
+                    3<span class="unit">h</span> 24<span class="unit">m</span>
+                  </div>
+                  <div class="hero-delta good">
+                    <svg viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></svg>
+                    14 min less than yesterday
+                  </div>
+                </div>
+                <div class="hero-ring">
+                  <svg viewBox="0 0 76 76">
+                    <circle class="ring-bg" cx="38" cy="38" r="32" stroke-width="6" fill="none"/>
+                    <circle class="ring-fg" cx="38" cy="38" r="32" stroke-width="6" fill="none"
+                            stroke-dasharray="201" stroke-dashoffset="36"/>
+                  </svg>
+                  <div class="ring-label">82%</div>
+                </div>
+              </div>
+
+              <div class="sub-stats">
+                <div>
+                  <div class="v">14<span style="font-size:12px;font-weight:500;color:var(--text-secondary)">m</span></div>
+                  <div class="l">Avg pickup</div>
+                </div>
+                <div>
+                  <div class="v amber">42<span style="font-size:12px;font-weight:500;color:var(--text-secondary)">m</span></div>
+                  <div class="l">Longest</div>
+                </div>
+                <div>
+                  <div class="v sage">2</div>
+                  <div class="l">Exercises</div>
+                </div>
+              </div>
+
+              <div class="rec-eyebrow">
+                <span>Recommended now</span>
+                <span class="more">More</span>
+              </div>
+
+              <div class="rec-card">
+                <div class="rec-glyph">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
+                </div>
+                <div class="rec-meta">
+                  <div class="duration">2 min</div>
+                  <div class="title">Quick rest</div>
+                  <div class="sub">Look 20 ft away, then do slow active blinks.</div>
+                  <span class="start">
+                    Start
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg>
+                  </span>
+                </div>
+              </div>
+
+              <div class="other-exercises">
+                <div class="exercise-row">
+                  <div class="duration">3 min</div>
+                  <div class="name">Palming</div>
+                  <div class="arrow">›</div>
+                </div>
+                <div class="exercise-row">
+                  <div class="duration">5 min</div>
+                  <div class="name">Classic exercise</div>
+                  <div class="arrow">›</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Floating session pill -->
+            <div class="session-pill">
+              <span class="dot amber"></span>
+              <div class="label">Auto-protecting your eyes</div>
+              <div class="action">Pause</div>
+            </div>
+
+            <!-- Liquid Glass tab bar -->
+            <div class="tab-bar">
+              <div class="tab active">
+                <svg viewBox="0 0 24 24"><path d="M3 12 12 3l9 9v9a2 2 0 0 1-2 2h-4v-7H10v7H6a2 2 0 0 1-2-2v-9z"/></svg>
+                Home
+              </div>
+              <div class="tab">
+                <svg viewBox="0 0 24 24"><path d="M3 21V10m6 11V4m6 17v-7m6 7V8"/></svg>
+                Insights
+              </div>
+              <div class="tab">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.36.16.66.42.85.74"/></svg>
+                Settings
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Home — auto-protect</div>
+      <div class="phone-sub">3h 24m hero · 14 min less yesterday · Quick rest 推荐 · 玻璃 tab bar</div>
+    </div>
+
+    <!-- Exercise screen -->
+    <div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="bg-orb tl" style="top: 60px; left: -100px;"></div>
+          <div class="screen exercise-screen">
+            <div class="ex-topbar">
+              <div class="x">✕</div>
+              <div class="center">
+                <div class="crumb">Quick rest</div>
+                <div class="progress"><span style="width: 65%"></span></div>
+              </div>
+              <div class="x" style="visibility:hidden">✕</div>
+            </div>
+            <div class="ex-content">
+              <div class="pulse-dot">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg>
+              </div>
+              <div class="step-name">Active blinks</div>
+              <div class="step-instruction">Close your eyes for two seconds. Open. Squeeze tight for two seconds. Release. Repeat slowly.</div>
+              <div class="countdown">00:42</div>
+            </div>
+            <div class="ex-skip">Skip step</div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Eye exercise — running</div>
+      <div class="phone-sub">沉浸式全屏,关闭按钮变玻璃圆形.<br>呼吸点保留 BreakView 风格。</div>
+    </div>
+
+    <!-- Insights -->
+    <div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="bg-orb br" style="bottom: 200px; right: -100px;"></div>
+          <div class="screen">
+            <div class="screen-content">
+              <div class="insights-header">
+                <div class="crumb">Insights</div>
+                <h1>Your eye health</h1>
+                <div class="range-tabs">
+                  <button>Day</button>
+                  <button class="active">Week</button>
+                  <button>Month</button>
+                </div>
+              </div>
+
+              <div class="insights-stats-row">
+                <div>
+                  <div class="v">3h 24m</div>
+                  <div class="l">Today total</div>
+                </div>
+                <div>
+                  <div class="v amber">42<span style="font-size:11px;font-weight:500;color:var(--text-secondary)">m</span></div>
+                  <div class="l">Longest</div>
+                </div>
+                <div>
+                  <div class="v sage">82<span style="font-size:11px;font-weight:500;color:var(--text-secondary)">%</span></div>
+                  <div class="l">Break rate</div>
+                </div>
+              </div>
+
+              <div class="weekly-trend">
+                <div class="label">
+                  <span>Daily screen time</span>
+                  <span class="max-tag">peak 5h 12m</span>
+                </div>
+                <div class="bars">
+                  <div class="bar-col"><div class="bar" style="height: 30%"></div><div class="day">M</div></div>
+                  <div class="bar-col"><div class="bar high" style="height: 70%"></div><div class="day">Tu</div></div>
+                  <div class="bar-col"><div class="bar" style="height: 45%"></div><div class="day">W</div></div>
+                  <div class="bar-col"><div class="bar high" style="height: 80%"></div><div class="day">Th</div></div>
+                  <div class="bar-col"><div class="bar" style="height: 55%"></div><div class="day">F</div></div>
+                  <div class="bar-col"><div class="bar" style="height: 25%"></div><div class="day">Sa</div></div>
+                  <div class="bar-col today"><div class="bar today" style="height: 50%"></div><div class="day">Su</div></div>
+                </div>
+              </div>
+
+              <div class="insight warn">
+                <div class="ttl">Long session detected</div>
+                <p>Your longest session was 42 min. Try to break it down — 20-min blocks reduce eye fatigue.</p>
+              </div>
+              <div class="insight">
+                <div class="ttl">Great break streak</div>
+                <p>82% break completion this week. Keep going — your eyes are listening.</p>
+              </div>
+            </div>
+
+            <div class="tab-bar">
+              <div class="tab"><svg viewBox="0 0 24 24"><path d="M3 12 12 3l9 9v9a2 2 0 0 1-2 2h-4v-7H10v7H6a2 2 0 0 1-2-2v-9z"/></svg>Home</div>
+              <div class="tab active"><svg viewBox="0 0 24 24"><path d="M3 21V10m6 11V4m6 17v-7m6 7V8"/></svg>Insights</div>
+              <div class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Insights — fixed labels &amp; range</div>
+      <div class="phone-sub">Day/Week/Month 真实切换。Insights 不再画卡,改为 hairline 分隔。</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════ STATES ═══════════ -->
+<div class="section">
+  <div class="section-label">States — idle &amp; alerting &amp; settings</div>
+
+  <div class="phones-row">
+
+    <!-- IDLE -->
+    <div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="bg-orb tl"></div>
+          <div class="screen">
+            <div class="screen-content">
+              <div class="header-block">
+                <div class="date">Sunday, May 4</div>
+                <h1>Good evening.</h1>
+              </div>
+              <div class="hero">
+                <div class="hero-left">
+                  <div class="hero-eyebrow">Today's screen time</div>
+                  <div class="hero-value">12<span class="unit">m</span></div>
+                  <div class="hero-delta">Just started today</div>
+                </div>
+                <div class="hero-ring">
+                  <svg viewBox="0 0 76 76">
+                    <circle class="ring-bg" cx="38" cy="38" r="32" stroke-width="6" fill="none"/>
+                    <circle class="ring-fg" cx="38" cy="38" r="32" stroke-width="6" fill="none"
+                            stroke-dasharray="201" stroke-dashoffset="0"/>
+                  </svg>
+                  <div class="ring-label">100%</div>
+                </div>
+              </div>
+              <div class="sub-stats">
+                <div><div class="v">12<span style="font-size:12px;font-weight:500;color:var(--text-secondary)">m</span></div><div class="l">Avg pickup</div></div>
+                <div><div class="v">12<span style="font-size:12px;font-weight:500;color:var(--text-secondary)">m</span></div><div class="l">Longest</div></div>
+                <div><div class="v">0</div><div class="l">Exercises</div></div>
+              </div>
+              <div class="rec-eyebrow">
+                <span>Recommended now</span>
+                <span class="more">More</span>
+              </div>
+              <div class="rec-card">
+                <div class="rec-glyph">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg>
+                </div>
+                <div class="rec-meta">
+                  <div class="duration">2 min</div>
+                  <div class="title">Quick rest</div>
+                  <div class="sub">Start with the 20-20-20 rule + slow blinks.</div>
+                  <span class="start">Start <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="session-pill">
+              <span class="dot amber-dim"></span>
+              <div class="label dim">Auto-protect off</div>
+              <div class="action">Start</div>
+            </div>
+
+            <div class="tab-bar">
+              <div class="tab active"><svg viewBox="0 0 24 24"><path d="M3 12 12 3l9 9v9a2 2 0 0 1-2 2h-4v-7H10v7H6a2 2 0 0 1-2-2v-9z"/></svg>Home</div>
+              <div class="tab"><svg viewBox="0 0 24 24"><path d="M3 21V10m6 11V4m6 17v-7m6 7V8"/></svg>Insights</div>
+              <div class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Home — idle</div>
+      <div class="phone-sub">点 dim,session pill 文案变 "Auto-protect off",右侧 Start 引导。</div>
+    </div>
+
+    <!-- ALERTING -->
+    <div>
+      <div class="phone alerting">
+        <div class="phone-screen">
+          <div class="bg-orb tl"></div>
+          <div class="bg-orb br"></div>
+          <div class="screen">
+            <div class="screen-content">
+              <div class="header-block">
+                <div class="date">Sunday, May 4</div>
+                <h1>Good afternoon.</h1>
+              </div>
+              <div class="hero">
+                <div class="hero-left">
+                  <div class="hero-eyebrow">Today's screen time</div>
+                  <div class="hero-value">3<span class="unit">h</span> 24<span class="unit">m</span></div>
+                  <div class="hero-delta good"><svg viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></svg> 14 min less than yesterday</div>
+                </div>
+                <div class="hero-ring">
+                  <svg viewBox="0 0 76 76">
+                    <circle class="ring-bg" cx="38" cy="38" r="32" stroke-width="6" fill="none"/>
+                    <circle class="ring-fg" cx="38" cy="38" r="32" stroke-width="6" fill="none"
+                            stroke-dasharray="201" stroke-dashoffset="36"/>
+                  </svg>
+                  <div class="ring-label">82%</div>
+                </div>
+              </div>
+              <div class="sub-stats">
+                <div><div class="v">14<span style="font-size:12px;font-weight:500;color:var(--text-secondary)">m</span></div><div class="l">Avg pickup</div></div>
+                <div><div class="v amber">42<span style="font-size:12px;font-weight:500;color:var(--text-secondary)">m</span></div><div class="l">Longest</div></div>
+                <div><div class="v sage">2</div><div class="l">Exercises</div></div>
+              </div>
+              <div class="rec-eyebrow">
+                <span>Recommended now</span>
+                <span class="more">More</span>
+              </div>
+              <div class="rec-card">
+                <div class="rec-glyph">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg>
+                </div>
+                <div class="rec-meta">
+                  <div class="duration">2 min</div>
+                  <div class="title">Quick rest</div>
+                  <div class="sub">Look 20 ft away, then do slow active blinks.</div>
+                  <span class="start">Start <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="session-pill" style="border-color: var(--amber-border);">
+              <span class="dot amber-pulse"></span>
+              <div class="label">Time for a break</div>
+              <div class="action">Take it</div>
+            </div>
+
+            <div class="tab-bar">
+              <div class="tab active"><svg viewBox="0 0 24 24"><path d="M3 12 12 3l9 9v9a2 2 0 0 1-2 2h-4v-7H10v7H6a2 2 0 0 1-2-2v-9z"/></svg>Home</div>
+              <div class="tab"><svg viewBox="0 0 24 24"><path d="M3 21V10m6 11V4m6 17v-7m6 7V8"/></svg>Insights</div>
+              <div class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Home — alerting</div>
+      <div class="phone-sub">脉冲点 + DI 琥珀光晕 + session pill 文案突出。</div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="screen">
+            <div class="screen-content">
+              <div class="settings-header">
+                <div class="crumb">Settings</div>
+                <h1>Preferences</h1>
+              </div>
+
+              <div class="s-section">
+                <div class="s-section-h">Screen Time</div>
+                <div class="s-card">
+                  <div class="s-row">
+                    <div>
+                      <div class="name">System data</div>
+                      <div class="desc">Use real screen-time data from your iPhone.</div>
+                    </div>
+                    <div class="connect-btn">Connect</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="s-section">
+                <div class="s-section-h">Reminder</div>
+                <div class="s-card">
+                  <div class="s-row">
+                    <div>
+                      <div class="name">Interval</div>
+                      <div class="desc">Fixed — 20 min</div>
+                    </div>
+                    <div class="value-tail">20 min</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="s-section">
+                <div class="s-section-h">Pro Features</div>
+                <div class="s-card">
+                  <div class="s-row">
+                    <div>
+                      <div class="name">DI Alert Size <span class="tag-pro">PRO</span></div>
+                      <div class="desc">Dynamic Island expanded height</div>
+                    </div>
+                    <div class="value-tail amber">M</div>
+                  </div>
+                  <div class="s-row">
+                    <div>
+                      <div class="name">Haptic on alert <span class="tag-pro">PRO</span></div>
+                      <div class="desc">Vibrate when reminder fires</div>
+                    </div>
+                    <div class="value-tail" style="opacity: 0.4">○</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tab-bar">
+              <div class="tab"><svg viewBox="0 0 24 24"><path d="M3 12 12 3l9 9v9a2 2 0 0 1-2 2h-4v-7H10v7H6a2 2 0 0 1-2-2v-9z"/></svg>Home</div>
+              <div class="tab"><svg viewBox="0 0 24 24"><path d="M3 21V10m6 11V4m6 17v-7m6 7V8"/></svg>Insights</div>
+              <div class="tab active"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-label">Settings — Connect Screen Time</div>
+      <div class="phone-sub">Section 标题外置(Apple 原生风),设置卡更紧凑。</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Notes -->
+<div class="section">
+  <div class="section-label">Design notes</div>
+  <div class="notes">
+    <h3>What changed (vs v0.1)</h3>
+    <ul>
+      <li><b>1 hero, not 4 stats</b> · 今日总时长从一个 26pt 卡升到 48pt 主角,辅以"比昨天少 14分"的 delta 信号 + 右侧合规率环</li>
+      <li><b>Sub-stats 不再是卡</b> · 三个数字一行 inline,只用 hairline 竖线分隔 — 大幅减少视觉噪声</li>
+      <li><b>推荐而不是选择</b> · 上下文化推荐一个练习(根据合规率/时间挑),其余练习作为底下的 row list,默认折叠在屏外</li>
+      <li><b>Session 状态变胶囊</b> · 从大卡降为 44pt 高的浮动玻璃胶囊,坐在 tab bar 上方</li>
+      <li><b>Liquid Glass tab bar</b> · 浮岛 + 24px blur + saturate(1.8) brightness(1.12) + inset 高光 + 外柔阴影。背后有暖橙色光晕做"折射衬托"</li>
+      <li><b>Section 标题外置</b> · "Recommended now / Screen Time" 等小标题脱出卡片,更呼吸 (Apple Settings 原生风)</li>
+      <li><b>Insights 真实 segmented control</b> · Day/Week/Month 真切换,胶囊滑块。"Last 7 days"假按钮拿掉</li>
+      <li><b>Insights 卡变 hairline</b> · 不再用 6 张卡,改为顶/底分割线 + 内分隔线</li>
+    </ul>
+  </div>
+</div>
+
+<div class="footer">
+  Eyescape v2 · warm + liquid glass v0.2 · 2026-05
+</div>
+
+<script>
+  const body = document.body;
+  const btnLight = document.getElementById('btn-light');
+  const btnDark  = document.getElementById('btn-dark');
+  function setTheme(mode) {
+    body.dataset.theme = mode;
+    btnLight.classList.toggle('active', mode === 'light');
+    btnDark.classList.toggle('active', mode === 'dark');
+  }
+  btnLight.addEventListener('click', () => setTheme('light'));
+  btnDark.addEventListener('click', () => setTheme('dark'));
+</script>
+
+</body>
+</html>
